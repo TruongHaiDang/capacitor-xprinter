@@ -1,0 +1,94 @@
+<resources>
+
+    <string name="app_name">PrinterDemo</string>
+
+    <string-array name="port">
+        <item>USB</item>
+        <item>NET</item>
+        <item>BT</item>
+        <item>Serial</item>
+        <item>MAC</item>
+    </string-array>
+
+    <string-array name="port2">
+        <item>NET</item>
+        <item>USB</item>
+        <item>BT</item>
+        <item>Serial</item>
+    </string-array>
+
+    <string-array name="baud_rate">
+        <item>9600</item>
+        <item>19200</item>
+        <item>38400</item>
+        <item>115200</item>
+    </string-array>
+
+    <string-array name="encrypt">
+        <item>NULL</item>
+        <item>WEP64</item>
+        <item>WEP128</item>
+        <item>WPA_AES_PSK</item>
+        <item>WPA_TKIP_PSK</item>
+        <item>WPA_TKIP_AES_PSK</item>
+        <item>WPA2_AES_PSK</item>
+        <item>WPA2_TKIP</item>
+        <item>WPA_WPA2_MixedMode</item>
+    </string-array>
+
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="hint">Please input IP</string>
+    <string name="context_and_code">print context,lineAndBarCode</string>
+    <string name="image">Print Image</string>
+    <string name="image_compression">Image Compression</string>
+    <string name="text">Print text</string>
+    <string name="print_table">Print Table</string>
+    <string name="barcode">Print barCode</string>
+    <string name="bt_select">Please select BLE dev</string>
+    <string name="usb_select">Please select USB dev</string>
+    <string name="cannot_find_serial">Serial port not found</string>
+    <string name="send_failed">Send Failed</string>
+    <string name="usb_pre_con">present connected Usb dev:</string>
+    <string name="con_success">Connect success</string>
+    <string name="con_failed">Connect failed</string>
+    <string name="con_has_disconnect">connection has disconnected</string>
+    <string name="start_pos_activity">Start ESC Printer</string>
+    <string name="start_tspl_activity">Start TSPL Printer</string>
+    <string name="start_cpcl_activity">Start CPCL Printer</string>
+    <string name="start_zpl_activity">Start ZPL Printer</string>
+    <string name="qrcode">Print QRCode</string>
+    <string name="none_ipaddress">please input the ipaddress first!</string>
+    <string name="none_mac_address">please input the mac address first!</string>
+    <string name="connect_first">please connect the printer first!</string>
+    <string name="check_link">checkLink</string>
+    <string name="self_check">self check</string>
+    <string name="all_device">All devices</string>
+    <string name="refresh">Refresh</string>
+    <string name="paired">Paired</string>
+    <string name="query_status">printer status</string>
+    <string name="request_permission_fail">Failed to obtain permission</string>
+    <string name="pls_agree_bluetooth_permission">Please agree to Bluetooth permissions</string>
+    <string name="please_device">please select device</string>
+    <string name="usb_detached">USB DETACHED</string>
+    <string name="usb_attached">USB ATTACHED</string>
+    <string name="printer_normal">printer normal</string>
+    <string name="printer_front_cover_open">printer front cover open</string>
+    <string name="printer_out_of_paper">printer out of paper</string>
+    <string name="printer_error">printer error</string>
+    <string name="press_feed">Feed button pressed</string>
+    <string name="printer_status">printer status</string>
+    <string name="open_cash_drawer">Open Cash Drawer</string>
+    <string name="sample">sample</string>
+    <string name="print_text">print text</string>
+    <string name="print_barcode">print barcode</string>
+    <string name="print_barcode2">print barcode2</string>
+    <string name="print_qrcode">print qrcode</string>
+    <string name="custom_fonts">Custom Fonts</string>
+    <string name="set_bluetooth">Set Bluetooth</string>
+    <string name="set_net">set net</string>
+    <string name="wifi_config">wifi config</string>
+    <string name="select_bmp_mode">bitmap model</string>
+    <string name="authentication">authentication</string>
+    <string name="get_mac">get mac</string>
+</resources>

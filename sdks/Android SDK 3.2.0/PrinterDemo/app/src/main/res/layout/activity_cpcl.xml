@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/textBtn"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_margin="15dp"
+        android:background="@drawable/customer_button_selector"
+        android:text="@string/print_text" />
+
+    <Button
+        android:id="@+id/barcodeBtn"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_margin="15dp"
+        android:background="@drawable/customer_button_selector"
+        android:text="@string/print_barcode" />
+
+    <Button
+        android:id="@+id/qrcodeBtn"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_margin="15dp"
+        android:background="@drawable/customer_button_selector"
+        android:text="@string/sample" />
+
+    <Button
+        android:id="@+id/printerStatusBtn"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_margin="15dp"
+        android:background="@drawable/customer_button_selector"
+        android:text="@string/printer_status" />
+
+</LinearLayout>
