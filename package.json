@@ -1,6 +1,6 @@
 {
   "name": "capacitor-xprinter",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "A Capacitor plugin for integrating Xprinter SDKs on Android and iOS.",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
