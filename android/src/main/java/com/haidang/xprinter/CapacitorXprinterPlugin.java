@@ -21,18 +21,34 @@ public class CapacitorXprinterPlugin extends Plugin {
     }
 
     @PluginMethod
-    public void initialize(PluginCall call) {
-        boolean success = implementation.initialize();
+    public void connect(PluginCall call) {
+        JSObject options = call.getData();
+        android.content.Context context = getContext();
+
+        HandshakeResponse response = implementation.connect(options, context);
+
         JSObject ret = new JSObject();
-        if (success) {
-            ret.put("code", 0);
-            ret.put("msg", "Initialize success");
-            ret.put("data", null);
-        } else {
-            ret.put("code", -1);
-            ret.put("msg", "Initialize success");
-            ret.put("data", null);
-        }
+        ret.put("code", response.code);
+        ret.put("msg", response.msg);
+        ret.put("data", response.data);
+
         call.resolve(ret);
     }
+
+    /**
+     * Ngắt kết nối với thiết bị máy in hiện tại.
+     * Gọi implementation.disconnect() và trả về kết quả cho phía JS/TS.
+     */
+    @PluginMethod
+    public void disconnect(PluginCall call) {
+        HandshakeResponse response = implementation.disconnect();
+
+        JSObject ret = new JSObject();
+        ret.put("code", response.code);
+        ret.put("msg", response.msg);
+        ret.put("data", response.data);
+
+        call.resolve(ret);
+    }
+
 }

@@ -8,10 +8,6 @@ export class CapacitorXprinter extends WebPlugin implements CapacitorXprinterPlu
     return options;
   }
 
-  async initialize(): Promise<void> {
-    return Promise.reject('Not supported on web');
-  }
-
   async connect(_options: import('./models').ConnectOptions): Promise<import('./models').HandshakeResponse> {
     return Promise.reject({ code: -1, msg: 'Not supported on web', data: null });
   }

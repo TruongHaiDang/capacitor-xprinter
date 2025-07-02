@@ -4,11 +4,6 @@ export interface CapacitorXprinterPlugin {
   echo(options: { value: string }): Promise<{ value: string }>;
 
   /**
-   * Khởi động thư viện.
-   */
-  initialize(): Promise<void>;
-
-  /**
    * Kết nối đến máy in
    * @param options Chọn loại kết nối và các thông số tương ứng với loại kết kết
    */
