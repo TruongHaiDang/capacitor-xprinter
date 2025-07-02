@@ -1,2 +1,5 @@
 onlyBuiltDependencies:
   - swiftlint
+
+overrides:
+  capacitor-xprinter: 'link:'

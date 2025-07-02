@@ -1,10 +1,10 @@
-export type DeviceType = 'USB' | 'BLUETOOTH' | 'ETHERNET' | 'SERIAL';
+export type ConnectType = 'USB' | 'BLUETOOTH' | 'ETHERNET' | 'SERIAL';
 
 export type PrinterProtocol = 'POS' | 'CPCL' | 'TSPL' | 'ZPL';
 
 export interface ConnectOptions {
   /** Loại thiết bị cần kết nối */
-  type: DeviceType;
+  type: ConnectType;
 
   /** Loại giao thức máy in */
   protocal: PrinterProtocol;
