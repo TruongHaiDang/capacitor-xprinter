@@ -390,7 +390,7 @@ Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnec
 
 | Prop             | Type                                                        | Description                                                  |
 | ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
-| **`type`**       | <code><a href="#devicetype">DeviceType</a></code>           | Loại thiết bị cần kết nối                                    |
+| **`type`**       | <code><a href="#connecttype">ConnectType</a></code>         | Loại thiết bị cần kết nối                                    |
 | **`protocal`**   | <code><a href="#printerprotocol">PrinterProtocol</a></code> | Loại giao thức máy in                                        |
 | **`name`**       | <code>string</code>                                         | Tên thiết bị Bluetooth hoặc USB (ví dụ: 'XP-58')             |
 | **`macAddress`** | <code>string</code>                                         | Địa chỉ MAC cho thiết bị Bluetooth                           |
@@ -412,7 +412,7 @@ Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnec
 ### Type Aliases
 
 
-#### DeviceType
+#### ConnectType
 
 <code>'USB' | 'BLUETOOTH' | 'ETHERNET' | 'SERIAL'</code>
 
