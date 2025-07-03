@@ -16,8 +16,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { link } from 'ionicons/icons';
+import { link, grid } from 'ionicons/icons';
 import { XprinterService } from '../services/xprinter.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -65,13 +66,25 @@ export class HomePage implements OnInit {
 
   deviceInfo: any = null;
 
-  constructor(private xprinter: XprinterService) {
-    addIcons({link});
+  constructor(private xprinter: XprinterService, private router: Router) {
+    addIcons({link, grid});
   }
 
   ngOnInit() {}
 
   async onConnectPrinter() {
+    if (this.isConnected) {
+      this.connectStatus = 'Đang ngắt kết nối...';
+      try {
+        const res = await this.xprinter.disconnectPrinter?.();
+        this.isConnected = false;
+        this.deviceInfo = null;
+        this.connectStatus = res?.msg || 'Đã ngắt kết nối';
+      } catch (err: any) {
+        this.connectStatus = 'Lỗi khi ngắt kết nối: ' + (err?.msg || err?.message || err);
+      }
+      return;
+    }
     this.connectStatus = 'Đang kết nối...';
     try {
       const options: any = {
@@ -84,7 +97,6 @@ export class HomePage implements OnInit {
         options.name = this.selectedSerialPort;
       } else if (this.selectedConnectType === 'ETHERNET') {
         options.ip = this.ipAddress;
-        options.port = 9100;
       } else if (this.selectedConnectType === 'SERIAL') {
         options.serialPort = this.selectedComPort;
         options.baudRate = this.selectedBaudrate;
@@ -116,5 +128,9 @@ export class HomePage implements OnInit {
         this.selectedComPort = this.comPorts[0];
       }
     }
+  }
+
+  openPrintTestPage() {
+    this.router.navigate(['/print-test']);
   }
 }
