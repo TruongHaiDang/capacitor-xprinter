@@ -1,8 +1,14 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="openPrintTestPage()">
+        <ion-icon name="grid"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
     <ion-title> Capacitor Xprinter App </ion-title>
 
-    <ion-buttons slot="primary">
+    <ion-buttons slot="end">
       <ion-button (click)="onConnectPrinter()">
         <ion-icon name="link"></ion-icon>
       </ion-button>

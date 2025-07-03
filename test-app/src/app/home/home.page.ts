@@ -16,8 +16,9 @@ import {
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { addIcons } from 'ionicons';
-import { link } from 'ionicons/icons';
+import { link, grid } from 'ionicons/icons';
 import { XprinterService } from '../services/xprinter.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -65,8 +66,8 @@ export class HomePage implements OnInit {
 
   deviceInfo: any = null;
 
-  constructor(private xprinter: XprinterService) {
-    addIcons({link});
+  constructor(private xprinter: XprinterService, private router: Router) {
+    addIcons({link, grid});
   }
 
   ngOnInit() {}
@@ -128,5 +129,9 @@ export class HomePage implements OnInit {
         this.selectedComPort = this.comPorts[0];
       }
     }
+  }
+
+  openPrintTestPage() {
+    this.router.navigate(['/print-test']);
   }
 }
