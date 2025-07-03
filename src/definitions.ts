@@ -134,4 +134,29 @@ export interface CapacitorXprinterPlugin {
    * Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnect lại
    */
   setProtocol(options: { protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL' }): Promise<HandshakeResponse>;
+
+  /**
+   * Cấu hình cho in text
+   */
+  configText(options: Record<string, any>): Promise<any>;
+
+  /**
+   * Cấu hình cho in barcode
+   */
+  configBarcode(options: Record<string, any>): Promise<any>;
+
+  /**
+   * Cấu hình cho in QRCode
+   */
+  configQRCode(options: Record<string, any>): Promise<any>;
+
+  /**
+   * Cấu hình cho in hình ảnh
+   */
+  configImage(options: Record<string, any>): Promise<any>;
+
+  /**
+   * Cấu hình cho in label (CPCL/TSPL/ZPL)
+   */
+  configLabel(options: Record<string, any>): Promise<any>;
 }

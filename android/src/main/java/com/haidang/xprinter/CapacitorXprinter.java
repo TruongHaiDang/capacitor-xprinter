@@ -2,7 +2,8 @@ package com.haidang.xprinter;
 
 import android.util.Log;
 import net.posprinter.POSConnect;
-import HandshakeResponse;
+import net.posprinter.IDeviceConnection;
+import com.haidang.xprinter.HandshakeResponse;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import java.util.Set;
@@ -12,13 +13,29 @@ import android.content.Context;
 import net.posprinter.IConnectListener;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
+import com.haidang.xprinter.PrinterBase;
+import com.haidang.xprinter.PrinterFactory;
 
 public class CapacitorXprinter {
     private IDeviceConnection currentDevice = null;
+    /**
+     * Đối tượng Printer hiện tại (POS/CPCL/TSPL/ZPL) được khởi tạo sau khi kết nối thành công.
+     */
+    private PrinterBase currentPrinter = null;
     
     public String echo(String value) {
         Log.i("Echo", value);
         return value;
+    }
+
+    /**
+     * Đảm bảo POSConnect đã được khởi tạo trước khi sử dụng.
+     * @param context Context ứng dụng để khởi tạo
+     */
+    private void ensureInit(Context context) {
+        if (POSConnect.getAppCtx() == null && context != null) {
+            POSConnect.init(context);
+        }
     }
 
     /**
@@ -30,11 +47,7 @@ public class CapacitorXprinter {
      * @param call     Đối tượng PluginCall để trả về kết quả cho phía JS/TS
      */
     public void connect(JSObject options, Context context, PluginCall call) {
-        // Kiểm tra xem POSConnect đã được khởi tạo với context ứng dụng chưa, nếu chưa thì khởi tạo
-        boolean isInitialized = POSConnect.getAppCtx() != null;
-        if (!isInitialized) {
-            POSConnect.init(context);
-        }
+        ensureInit(context);
 
         // Lấy loại thiết bị từ options (1: USB, 2: Bluetooth, 3: Ethernet, 4: Serial)
         int deviceType = options.getInteger("type");
@@ -50,9 +63,19 @@ public class CapacitorXprinter {
                 result.put("data", info);
                 if (status == POSConnect.CONNECT_SUCCESS) {
                     currentDevice = device;
+                    // Khởi tạo printer tương ứng với language
+                    String language = options.getString("language");
+                    if (language == null) language = "POS";
+                    try {
+                        currentPrinter = PrinterFactory.createPrinter(language, device);
+                    } catch (IllegalArgumentException ex) {
+                        // Không hỗ trợ ngôn ngữ -> reject và đóng kết nối
+                        call.reject(ex.getMessage(), (Exception)null, result);
+                        return;
+                    }
                     call.resolve(result);
                 } else {
-                    call.reject(msg, null, result);
+                    call.reject(msg, (Exception)null, result);
                 }
             }
         };
@@ -74,13 +97,13 @@ public class CapacitorXprinter {
                     // Kết nối qua Ethernet với IP và port
                     String ip = options.getString("ip");
                     int port = options.getInteger("port");
-                    device.connect(ip, port, listener);
+                    device.connect(ip + ":" + port, listener);
                     break;
                 case POSConnect.DEVICE_TYPE_SERIAL:
                     // Kết nối qua Serial với tên cổng và baudrate
                     String serialPort = options.getString("serialPort");
                     int baudRate = options.getInteger("baudRate");
-                    device.connect(serialPort, baudRate, listener);
+                    device.connect(serialPort + ":" + baudRate, listener);
                     break;
                 default:
                     // Loại thiết bị không hỗ trợ
@@ -88,7 +111,7 @@ public class CapacitorXprinter {
                     result.put("code", 400);
                     result.put("msg", "Loại thiết bị không hỗ trợ");
                     result.put("data", null);
-                    call.reject("Loại thiết bị không hỗ trợ", null, result);
+                    call.reject("Loại thiết bị không hỗ trợ", (Exception)null, result);
             }
         } catch (Exception e) {
             // Xử lý lỗi khi kết nối thất bại (lỗi ngoại lệ)
@@ -96,7 +119,7 @@ public class CapacitorXprinter {
             result.put("code", 500);
             result.put("msg", "Kết nối thất bại: " + e.getMessage());
             result.put("data", null);
-            call.reject("Kết nối thất bại: " + e.getMessage(), null, result);
+            call.reject("Kết nối thất bại: " + e.getMessage(), (Exception)null, result);
         }
     }
 
@@ -113,6 +136,7 @@ public class CapacitorXprinter {
                 // Đóng kết nối với thiết bị
                 currentDevice.close();
                 currentDevice = null;
+                currentPrinter = null;
                 // Dọn dẹp tài nguyên
                 POSConnect.exit();
                 // Ngắt kết nối thành công
@@ -136,6 +160,7 @@ public class CapacitorXprinter {
      * @return        Danh sách tên cổng/thiết bị
      */
     public List<String> listAvailablePorts(String type, Context context) {
+        ensureInit(context);
         if (type == null) return Collections.emptyList();
 
         switch (type.toUpperCase()) {
@@ -171,6 +196,55 @@ public class CapacitorXprinter {
         constants.put("USB_DETACHED", POSConnect.USB_DETACHED);
         constants.put("BLUETOOTH_INTERRUPT", POSConnect.BLUETOOTH_INTERRUPT);
         return constants;
+    }
+
+    /**
+     * Lấy danh sách thiết bị USB chi tiết (UsbDevice).
+     * @param context Context ứng dụng Android
+     * @return Danh sách UsbDevice
+     */
+    public List<android.hardware.usb.UsbDevice> listUsbDevices(Context context) {
+        ensureInit(context);
+        return POSConnect.getUsbDevice(context);
+    }
+
+    /**
+     * Lấy danh sách cổng Serial (COM).
+     * @return Danh sách tên cổng Serial
+     */
+    public List<String> listSerialPorts(Context context) {
+        ensureInit(context);
+        return POSConnect.getSerialPort();
+    }
+
+    /**
+     * Kết nối tới máy in qua địa chỉ MAC (LAN/Ethernet).
+     * @param mac Địa chỉ MAC của thiết bị
+     * @param context Context ứng dụng Android
+     * @param call Đối tượng PluginCall để trả về kết quả
+     */
+    public void connectByMac(String mac, Context context, PluginCall call) {
+        ensureInit(context);
+        IDeviceConnection device = POSConnect.createDevice(POSConnect.DEVICE_TYPE_ETHERNET);
+        IConnectListener listener = new IConnectListener() {
+            @Override
+            public void onStatus(int status, String info, String msg) {
+                JSObject result = new JSObject();
+                result.put("code", status);
+                result.put("msg", msg);
+                result.put("data", info);
+                if (status == POSConnect.CONNECT_SUCCESS) {
+                    currentDevice = device;
+                    // Mặc định dùng POS nếu không chỉ định
+                    currentPrinter = PrinterFactory.createPrinter("POS", currentDevice);
+                    call.resolve(result);
+                } else {
+                    call.reject(msg, (Exception)null, result);
+                }
+            }
+        };
+        // POSConnect.connectMac đã tự gọi createDevice ở trong, nhưng ta vẫn gọi để lấy reference device ở trên.
+        POSConnect.connectMac(mac, listener);
     }
 
 }

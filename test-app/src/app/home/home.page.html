@@ -1,19 +1,25 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title> Capacitor Xprinter App </ion-title>
+
+    <ion-buttons slot="primary">
+      <ion-button (click)="onConnectPrinter()">
+        <ion-icon name="link"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
   <ion-item>
-    <ion-select label="Phương thức kết nối" [(ngModel)]="selectedConnectType">
+    <ion-select label="Phương thức kết nối" [(ngModel)]="selectedConnectType" (ionChange)="onConnectTypeChange()">
       <ion-select-option *ngFor="let item of connectTypes" value="{{item}}">{{ item }}</ion-select-option>
     </ion-select>
   </ion-item>
 
   <ion-item>
-    <ion-select label="Giao thức in">
-      <ion-select-option *ngFor="let item of printProtocols" value="{{item}}">{{ item }}</ion-select-option>
+    <ion-select label="Giao thức in" [(ngModel)]="selectedLanguage">
+      <ion-select-option *ngFor="let item of printLanguages" value="{{item}}">{{ item }}</ion-select-option>
     </ion-select>
   </ion-item>
 
@@ -43,9 +49,14 @@
   </ion-list>
 
   <ion-item *ngIf="selectedConnectType==='BLUETOOTH'">
-    <ion-input label="Địa chỉ MAC:" [(ngModel)]="macAddress"></ion-input>
+    <ion-select label="Thiết bị Bluetooth" [(ngModel)]="selectedBluetoothMac">
+      <ion-select-option *ngFor="let item of bluetoothDevices" value="{{item}}">{{ item }}</ion-select-option>
+    </ion-select>
   </ion-item>
 
   <h3 class="sec-header">Thông tin</h3>
-  <p>Trạng thái: </p>
+  <p>Trạng thái: {{ connectStatus }}</p>
+
+  <h3 class="sec-header" *ngIf="deviceInfo">Thông tin thiết bị</h3>
+  <pre *ngIf="deviceInfo">{{ deviceInfo | json }}</pre>
 </ion-content>
