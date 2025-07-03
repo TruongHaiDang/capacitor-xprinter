@@ -61,4 +61,8 @@ export class XprinterService {
     const res = await CapacitorXprinter.listAvailablePorts({ type: 'SERIAL' });
     return res.ports || [];
   }
+
+  async disconnectPrinter(): Promise<{ code: number; msg: string; data: any }> {
+    return CapacitorXprinter.disconnect();
+  }
 }

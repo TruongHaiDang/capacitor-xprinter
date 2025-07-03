@@ -72,6 +72,18 @@ export class HomePage implements OnInit {
   ngOnInit() {}
 
   async onConnectPrinter() {
+    if (this.isConnected) {
+      this.connectStatus = 'Đang ngắt kết nối...';
+      try {
+        const res = await this.xprinter.disconnectPrinter?.();
+        this.isConnected = false;
+        this.deviceInfo = null;
+        this.connectStatus = res?.msg || 'Đã ngắt kết nối';
+      } catch (err: any) {
+        this.connectStatus = 'Lỗi khi ngắt kết nối: ' + (err?.msg || err?.message || err);
+      }
+      return;
+    }
     this.connectStatus = 'Đang kết nối...';
     try {
       const options: any = {
