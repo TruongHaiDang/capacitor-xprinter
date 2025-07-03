@@ -72,6 +72,18 @@ export class CapacitorXprinter extends WebPlugin implements CapacitorXprinterPlu
     return Promise.resolve({ ports: [] });
   }
 
+  async getStatusConstants(): Promise<Record<string, number>> {
+    return Promise.resolve({
+      CONNECT_SUCCESS: 1,
+      CONNECT_FAIL: 2,
+      SEND_FAIL: 3,
+      CONNECT_INTERRUPT: 4,
+      USB_ATTACHED: 5,
+      USB_DETACHED: 6,
+      BLUETOOTH_INTERRUPT: 7,
+    });
+  }
+
   async printEncodedText(_options: { text: string; encoding: 'gbk' | 'utf-8' | 'shift-jis' }): Promise<import('./models').HandshakeResponse> {
     return Promise.reject({ code: -1, msg: 'Not supported on web', data: null });
   }

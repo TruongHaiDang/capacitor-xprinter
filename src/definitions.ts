@@ -81,10 +81,6 @@ export interface CapacitorXprinterPlugin {
   sendRawData(options: { hex: string }): Promise<HandshakeResponse>;
 
   /**
-   * =============== PENDING ===============
-   */
-
-  /**
    * In hình ảnh base64 – phù hợp khi không có file path
    */
   printImageBase64(options: {

@@ -20,19 +20,15 @@ public class CapacitorXprinterPlugin extends Plugin {
         call.resolve(ret);
     }
 
+    /**
+     * Kết nối tới thiết bị máy in dựa trên loại thiết bị và các tham số truyền vào.
+     * Trả về kết quả bất đồng bộ qua IConnectListener.
+     */
     @PluginMethod
     public void connect(PluginCall call) {
         JSObject options = call.getData();
         android.content.Context context = getContext();
-
-        HandshakeResponse response = implementation.connect(options, context);
-
-        JSObject ret = new JSObject();
-        ret.put("code", response.code);
-        ret.put("msg", response.msg);
-        ret.put("data", response.data);
-
-        call.resolve(ret);
+        implementation.connect(options, context, call);
     }
 
     /**
@@ -49,6 +45,30 @@ public class CapacitorXprinterPlugin extends Plugin {
         ret.put("data", response.data);
 
         call.resolve(ret);
+    }
+
+    /**
+     * Lấy danh sách cổng/thiết bị khả dụng (USB, BLUETOOTH, SERIAL).
+     * Trả về mảng string 'ports'.
+     */
+    @PluginMethod
+    public void listAvailablePorts(PluginCall call) {
+        String type = call.getString("type");
+        java.util.List<String> ports = implementation.listAvailablePorts(type, getContext());
+
+        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray(ports);
+        JSObject ret = new JSObject();
+        ret.put("ports", arr);
+        call.resolve(ret);
+    }
+
+    /**
+     * Trả về các hằng số trạng thái của POSConnect.
+     */
+    @PluginMethod
+    public void getStatusConstants(PluginCall call) {
+        JSObject constants = implementation.getStatusConstants();
+        call.resolve(constants);
     }
 
 }
