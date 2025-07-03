@@ -14,7 +14,6 @@ npx cap sync
 <docgen-index>
 
 * [`echo(...)`](#echo)
-* [`initialize()`](#initialize)
 * [`connect(...)`](#connect)
 * [`disconnect()`](#disconnect)
 * [`printText(...)`](#printtext)
@@ -35,8 +34,14 @@ npx cap sync
 * [`sendBatchCommands(...)`](#sendbatchcommands)
 * [`isConnected()`](#isconnected)
 * [`setProtocol(...)`](#setprotocol)
+* [`configText(...)`](#configtext)
+* [`configBarcode(...)`](#configbarcode)
+* [`configQRCode(...)`](#configqrcode)
+* [`configImage(...)`](#configimage)
+* [`configLabel(...)`](#configlabel)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
+* [Enums](#enums)
 
 </docgen-index>
 
@@ -52,19 +57,6 @@ echo(options: { value: string; }) => any
 | Param         | Type                            |
 | ------------- | ------------------------------- |
 | **`options`** | <code>{ value: string; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### initialize()
-
-```typescript
-initialize() => any
-```
-
-Khởi động thư viện.
 
 **Returns:** <code>any</code>
 
@@ -383,6 +375,91 @@ Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnec
 --------------------
 
 
+### configText(...)
+
+```typescript
+configText(options: any) => any
+```
+
+Cấu hình cho in text
+
+| Param         | Type             |
+| ------------- | ---------------- |
+| **`options`** | <code>any</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### configBarcode(...)
+
+```typescript
+configBarcode(options: any) => any
+```
+
+Cấu hình cho in barcode
+
+| Param         | Type             |
+| ------------- | ---------------- |
+| **`options`** | <code>any</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### configQRCode(...)
+
+```typescript
+configQRCode(options: any) => any
+```
+
+Cấu hình cho in QRCode
+
+| Param         | Type             |
+| ------------- | ---------------- |
+| **`options`** | <code>any</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### configImage(...)
+
+```typescript
+configImage(options: any) => any
+```
+
+Cấu hình cho in hình ảnh
+
+| Param         | Type             |
+| ------------- | ---------------- |
+| **`options`** | <code>any</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### configLabel(...)
+
+```typescript
+configLabel(options: any) => any
+```
+
+Cấu hình cho in label (CPCL/TSPL/ZPL)
+
+| Param         | Type             |
+| ------------- | ---------------- |
+| **`options`** | <code>any</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
 ### Interfaces
 
 
@@ -391,7 +468,7 @@ Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnec
 | Prop             | Type                                                        | Description                                                  |
 | ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------ |
 | **`type`**       | <code><a href="#connecttype">ConnectType</a></code>         | Loại thiết bị cần kết nối                                    |
-| **`protocal`**   | <code><a href="#printerprotocol">PrinterProtocol</a></code> | Loại giao thức máy in                                        |
+| **`language`**   | <code><a href="#printerlanguage">PrinterLanguage</a></code> | Loại ngôn ngữ máy in                                         |
 | **`name`**       | <code>string</code>                                         | Tên thiết bị Bluetooth hoặc USB (ví dụ: 'XP-58')             |
 | **`macAddress`** | <code>string</code>                                         | Địa chỉ MAC cho thiết bị Bluetooth                           |
 | **`ip`**         | <code>string</code>                                         | Địa chỉ IP cho kết nối Ethernet                              |
@@ -412,13 +489,21 @@ Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnec
 ### Type Aliases
 
 
-#### ConnectType
-
-<code>'USB' | 'BLUETOOTH' | 'ETHERNET' | 'SERIAL'</code>
-
-
-#### PrinterProtocol
+#### PrinterLanguage
 
 <code>'POS' | 'CPCL' | 'TSPL' | 'ZPL'</code>
+
+
+### Enums
+
+
+#### ConnectType
+
+| Members         | Value          |
+| --------------- | -------------- |
+| **`USB`**       | <code>1</code> |
+| **`BLUETOOTH`** | <code>2</code> |
+| **`ETHERNET`**  | <code>3</code> |
+| **`SERIAL`**    | <code>4</code> |
 
 </docgen-api>

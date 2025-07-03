@@ -99,4 +99,29 @@ export class CapacitorXprinter extends WebPlugin implements CapacitorXprinterPlu
   async setProtocol(_options: { protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL' }): Promise<import('./models').HandshakeResponse> {
     return Promise.reject({ code: -1, msg: 'Not supported on web', data: null });
   }
+
+  // Hàm cấu hình cho in text - không hỗ trợ trên web
+  async configText(_options: Record<string, any>): Promise<any> {
+    return Promise.reject({ code: -1, msg: 'Không hỗ trợ trên web', data: null });
+  }
+
+  // Hàm cấu hình cho in barcode - không hỗ trợ trên web
+  async configBarcode(_options: Record<string, any>): Promise<any> {
+    return Promise.reject({ code: -1, msg: 'Không hỗ trợ trên web', data: null });
+  }
+
+  // Hàm cấu hình cho in QRCode - không hỗ trợ trên web
+  async configQRCode(_options: Record<string, any>): Promise<any> {
+    return Promise.reject({ code: -1, msg: 'Không hỗ trợ trên web', data: null });
+  }
+
+  // Hàm cấu hình cho in hình ảnh - không hỗ trợ trên web
+  async configImage(_options: Record<string, any>): Promise<any> {
+    return Promise.reject({ code: -1, msg: 'Không hỗ trợ trên web', data: null });
+  }
+
+  // Hàm cấu hình cho in label (CPCL/TSPL/ZPL) - không hỗ trợ trên web
+  async configLabel(_options: Record<string, any>): Promise<any> {
+    return Promise.reject({ code: -1, msg: 'Không hỗ trợ trên web', data: null });
+  }
 }

@@ -5,14 +5,14 @@ export enum ConnectType {
   SERIAL = 4,
 }
 
-export type PrinterProtocol = 'POS' | 'CPCL' | 'TSPL' | 'ZPL';
+export type PrinterLanguage = 'POS' | 'CPCL' | 'TSPL' | 'ZPL';
 
 export interface ConnectOptions {
   /** Loại thiết bị cần kết nối */
   type: ConnectType;
 
-  /** Loại giao thức máy in */
-  protocal: PrinterProtocol;
+  /** Loại ngôn ngữ máy in */
+  language: PrinterLanguage;
 
   /** Tên thiết bị Bluetooth hoặc USB (ví dụ: 'XP-58') */
   name?: string;
