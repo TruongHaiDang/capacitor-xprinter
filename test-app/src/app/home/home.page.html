@@ -1,0 +1,51 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title> Capacitor Xprinter App </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-select label="Phương thức kết nối" [(ngModel)]="selectedConnectType">
+      <ion-select-option *ngFor="let item of connectTypes" value="{{item}}">{{ item }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item>
+    <ion-select label="Giao thức in">
+      <ion-select-option *ngFor="let item of printProtocols" value="{{item}}">{{ item }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <h3 class="sec-header">Cấu hình</h3>
+  <ion-item *ngIf="selectedConnectType==='USB'">
+    <ion-select label="Cổng Serial" [(ngModel)]="selectedSerialPort">
+      <ion-select-option *ngFor="let item of serialPorts" value="{{item}}">{{ item }}</ion-select-option>
+    </ion-select>
+  </ion-item>
+
+  <ion-item *ngIf="selectedConnectType==='ETHERNET'">
+    <ion-input label="Địa chỉ IP:" [(ngModel)]="ipAddress"></ion-input>
+  </ion-item>
+
+  <ion-list *ngIf="selectedConnectType==='SERIAL'">
+    <ion-item>
+      <ion-select label="Cổng COM" [(ngModel)]="selectedComPort">
+        <ion-select-option *ngFor="let item of comPorts" value="{{item}}">{{ item }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <ion-item>
+      <ion-select label="Tốc độ baud" [(ngModel)]="selectedBaudrate">
+        <ion-select-option *ngFor="let item of baudrateList" value="{{item}}">{{ item }}</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </ion-list>
+
+  <ion-item *ngIf="selectedConnectType==='BLUETOOTH'">
+    <ion-input label="Địa chỉ MAC:" [(ngModel)]="macAddress"></ion-input>
+  </ion-item>
+
+  <h3 class="sec-header">Thông tin</h3>
+  <p>Trạng thái: </p>
+</ion-content>

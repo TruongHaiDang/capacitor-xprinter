@@ -4,11 +4,6 @@ export interface CapacitorXprinterPlugin {
   echo(options: { value: string }): Promise<{ value: string }>;
 
   /**
-   * Khởi động thư viện.
-   */
-  initialize(): Promise<void>;
-
-  /**
    * Kết nối đến máy in
    * @param options Chọn loại kết nối và các thông số tương ứng với loại kết kết
    */
@@ -84,10 +79,6 @@ export interface CapacitorXprinterPlugin {
    * Gửi dữ liệu tùy ý (raw byte) – nâng cao
    */
   sendRawData(options: { hex: string }): Promise<HandshakeResponse>;
-
-  /**
-   * =============== PENDING ===============
-   */
 
   /**
    * In hình ảnh base64 – phù hợp khi không có file path
