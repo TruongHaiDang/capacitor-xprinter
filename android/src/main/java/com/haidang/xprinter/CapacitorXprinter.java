@@ -94,10 +94,9 @@ public class CapacitorXprinter {
                     device.connect(mac, listener);
                     break;
                 case POSConnect.DEVICE_TYPE_ETHERNET:
-                    // Kết nối qua Ethernet với IP và port
+                    // Kết nối qua Ethernet chỉ truyền IP, port mặc định 9100
                     String ip = options.getString("ip");
-                    int port = options.getInteger("port");
-                    device.connect(ip + ":" + port, listener);
+                    device.connect(ip, listener);
                     break;
                 case POSConnect.DEVICE_TYPE_SERIAL:
                     // Kết nối qua Serial với tên cổng và baudrate
@@ -245,6 +244,45 @@ public class CapacitorXprinter {
         };
         // POSConnect.connectMac đã tự gọi createDevice ở trong, nhưng ta vẫn gọi để lấy reference device ở trên.
         POSConnect.connectMac(mac, listener);
+    }
+
+    public void printText(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng in text chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        String text = options.getString("text");
+        if (text == null) {
+            call.reject("Thiếu text", (Exception) null, null);
+            return;
+        }
+        String alignStr = options.getString("alignment", "left");
+        int alignment = 0;
+        switch (alignStr.toLowerCase()) {
+            case "center": alignment = 1; break;
+            case "right": alignment = 2; break;
+            default: alignment = 0; break;
+        }
+        int textSize = options.has("textSize") ? options.getInteger("textSize") : 0;
+        int attribute = options.has("attribute") ? options.getInteger("attribute") : 0;
+        try {
+            ((PosPrinterWrapper) currentPrinter).printText(text, alignment, textSize, attribute);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
     }
 
 }

@@ -97,7 +97,6 @@ export class HomePage implements OnInit {
         options.name = this.selectedSerialPort;
       } else if (this.selectedConnectType === 'ETHERNET') {
         options.ip = this.ipAddress;
-        options.port = 9100;
       } else if (this.selectedConnectType === 'SERIAL') {
         options.serialPort = this.selectedComPort;
         options.baudRate = this.selectedBaudrate;

@@ -115,4 +115,13 @@ public class CapacitorXprinterPlugin extends Plugin {
         implementation.connectByMac(mac, getContext(), call);
     }
 
+    /**
+     * In văn bản (POS Printer)
+     */
+    @PluginMethod
+    public void printText(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printText(options, call);
+    }
+
 }

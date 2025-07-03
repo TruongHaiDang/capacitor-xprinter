@@ -65,4 +65,8 @@ export class XprinterService {
   async disconnectPrinter(): Promise<{ code: number; msg: string; data: any }> {
     return CapacitorXprinter.disconnect();
   }
+
+  async printText(text: string, alignment: 'left' | 'center' | 'right' = 'left', textSize = 0, attribute = 0) {
+    return CapacitorXprinter.printText({ text, alignment, textSize, attribute });
+  }
 }
