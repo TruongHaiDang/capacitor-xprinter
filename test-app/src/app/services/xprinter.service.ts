@@ -69,4 +69,20 @@ export class XprinterService {
   async printText(text: string, alignment: 'left' | 'center' | 'right' = 'left', textSize = 0, attribute = 0) {
     return CapacitorXprinter.printText({ text, alignment, textSize, attribute });
   }
+
+  async printQRCode(data: string, moduleSize = 6, ecLevel = 3, alignment: 'left' | 'center' | 'right' = 'left') {
+    return CapacitorXprinter.printQRCode({ data, moduleSize, ecLevel, alignment });
+  }
+
+  async printBarcode(data: string, codeType: number, width = 2, height = 80, alignment: 'left' | 'center' | 'right' = 'left', textPosition = 2) {
+    return CapacitorXprinter.printBarcode({ data, codeType, width, height, alignment, textPosition });
+  }
+
+  async printImageFromPath(path: string, width = 384, alignment: 'left' | 'center' | 'right' = 'left') {
+    return CapacitorXprinter.printImageFromPath({ imagePath: path, width, alignment });
+  }
+
+  async printImageBase64(base64: string, width = 384, alignment: 'left' | 'center' | 'right' = 'left') {
+    return CapacitorXprinter.printImageBase64({ base64, width, alignment });
+  }
 }

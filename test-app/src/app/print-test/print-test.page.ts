@@ -48,4 +48,37 @@ export class PrintTestPage implements OnInit {
       alert(err?.msg || err?.message || 'Lỗi in');
     }
   }
+
+  async onPrintQRCode() {
+    const data = prompt('Nhập nội dung QR', 'https://xprinter.net');
+    if (!data) return;
+    try {
+      const res = await this.xprinter.printQRCode(data);
+      alert(res.msg || 'In QR thành công');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi in');
+    }
+  }
+
+  async onPrintBarcode() {
+    const data = prompt('Nhập nội dung Barcode', '1234567890');
+    if (!data) return;
+    try {
+      const res = await this.xprinter.printBarcode(data, 73); // CODE128 mặc định
+      alert(res.msg || 'In barcode thành công');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi in');
+    }
+  }
+
+  async onPrintImage() {
+    const path = prompt('Nhập đường dẫn ảnh trên thiết bị', '/sdcard/Download/logo.png');
+    if (!path) return;
+    try {
+      const res = await this.xprinter.printImageFromPath(path);
+      alert(res.msg || 'In hình thành công');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi in');
+    }
+  }
 }

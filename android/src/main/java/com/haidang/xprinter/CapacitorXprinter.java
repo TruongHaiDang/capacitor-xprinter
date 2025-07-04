@@ -285,4 +285,130 @@ public class CapacitorXprinter {
         }
     }
 
+    public void printQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        String data = options.getString("data");
+        if (data == null) {
+            call.reject("Thiếu data", (Exception) null, null);
+            return;
+        }
+        int moduleSize = options.has("moduleSize") ? options.getInteger("moduleSize") : 6;
+        int ecLevel = options.has("ecLevel") ? options.getInteger("ecLevel") : 3;
+        int alignment = convertAlign(options.getString("alignment", "left"));
+        try {
+            currentPrinter.printQRCode(data, moduleSize, ecLevel, alignment);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In QR thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        String data = options.getString("data");
+        if (data == null) {
+            call.reject("Thiếu data", (Exception) null, null);
+            return;
+        }
+        int codeType = options.getInteger("codeType");
+        int width = options.has("width") ? options.getInteger("width") : 2;
+        int height = options.has("height") ? options.getInteger("height") : 80;
+        int alignment = convertAlign(options.getString("alignment", "left"));
+        int textPosition = options.has("textPosition") ? options.getInteger("textPosition") : 2;
+        try {
+            currentPrinter.printBarcode(data, codeType, width, height, alignment, textPosition);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In Barcode thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printImageFromPath(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        String path = options.getString("imagePath");
+        if (path == null) {
+            call.reject("Thiếu imagePath", (Exception) null, null);
+            return;
+        }
+        int width = options.has("width") ? options.getInteger("width") : 384;
+        int alignment = convertAlign(options.getString("alignment", "left"));
+        try {
+            currentPrinter.printImageFromPath(path, width, alignment);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In hình thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printImageBase64(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        String base64 = options.getString("base64");
+        if (base64 == null) {
+            call.reject("Thiếu base64", (Exception) null, null);
+            return;
+        }
+        int width = options.has("width") ? options.getInteger("width") : 384;
+        int alignment = convertAlign(options.getString("alignment", "left"));
+        try {
+            currentPrinter.printImageBase64(base64, width, alignment);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In hình thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    // Helper
+    private int convertAlign(String alignStr) {
+        if (alignStr == null) return 0;
+        switch (alignStr.toLowerCase()) {
+            case "center": return 1;
+            case "right": return 2;
+            default: return 0;
+        }
+    }
+
 }

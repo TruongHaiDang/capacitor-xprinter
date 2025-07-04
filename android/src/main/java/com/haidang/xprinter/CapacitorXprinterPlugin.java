@@ -124,4 +124,40 @@ public class CapacitorXprinterPlugin extends Plugin {
         implementation.printText(options, call);
     }
 
+    /**
+     * In mã QRCode
+     */
+    @PluginMethod
+    public void printQRCode(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printQRCode(options, call);
+    }
+
+    /**
+     * In mã Barcode 1D
+     */
+    @PluginMethod
+    public void printBarcode(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printBarcode(options, call);
+    }
+
+    /**
+     * In hình ảnh từ đường dẫn
+     */
+    @PluginMethod
+    public void printImageFromPath(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printImageFromPath(options, call);
+    }
+
+    /**
+     * In hình ảnh base64
+     */
+    @PluginMethod
+    public void printImageBase64(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printImageBase64(options, call);
+    }
+
 }
