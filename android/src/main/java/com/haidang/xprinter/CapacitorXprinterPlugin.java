@@ -124,22 +124,22 @@ public class CapacitorXprinterPlugin extends Plugin {
         implementation.printText(options, call);
     }
 
-}
-
     /**
      * In mã QR
      */
     @PluginMethod
     public void printQRCode(PluginCall call) {
-        implementation.printQRCode(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.printQRCode(options, call);
     }
 
     /**
-     * In mã vạch
+     * In mã vạch 1D
      */
     @PluginMethod
     public void printBarcode(PluginCall call) {
-        implementation.printBarcode(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.printBarcode(options, call);
     }
 
     /**
@@ -147,15 +147,17 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void printImageFromPath(PluginCall call) {
-        implementation.printImageFromPath(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.printImageFromPath(options, call);
     }
 
     /**
-     * In hình ảnh từ base64
+     * In hình ảnh base64
      */
     @PluginMethod
     public void printImageBase64(PluginCall call) {
-        implementation.printImageBase64(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.printImageBase64(options, call);
     }
 
     /**
@@ -171,7 +173,8 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void openCashDrawer(PluginCall call) {
-        implementation.openCashDrawer(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.openCashDrawer(options, call);
     }
 
     /**
@@ -183,7 +186,7 @@ public class CapacitorXprinterPlugin extends Plugin {
     }
 
     /**
-     * Đọc dữ liệu phản hồi từ máy in
+     * Đọc dữ liệu phản hồi từ máy in (nếu có)
      */
     @PluginMethod
     public void readData(PluginCall call) {
@@ -195,7 +198,8 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void sendRawData(PluginCall call) {
-        implementation.sendRawData(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.sendRawData(options, call);
     }
 
     /**
@@ -203,7 +207,8 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void printLabel(PluginCall call) {
-        implementation.printLabel(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.printLabel(options, call);
     }
 
     /**
@@ -215,7 +220,7 @@ public class CapacitorXprinterPlugin extends Plugin {
     }
 
     /**
-     * Thực hiện in tự test của máy in
+     * Thực hiện in tự test của máy in (self-test)
      */
     @PluginMethod
     public void selfTest(PluginCall call) {
@@ -227,34 +232,26 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void printEncodedText(PluginCall call) {
-        implementation.printEncodedText(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.printEncodedText(options, call);
     }
 
     /**
-     * Gửi nhiều lệnh liên tiếp
+     * Gửi nhiều lệnh liên tiếp (batch command mode)
      */
     @PluginMethod
     public void sendBatchCommands(PluginCall call) {
-        implementation.sendBatchCommands(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.sendBatchCommands(options, call);
     }
 
     /**
-     * Kiểm tra kết nối hiện tại có đang hoạt động không
-     */
-    @PluginMethod
-    public void isConnected(PluginCall call) {
-        boolean connected = implementation.isConnected();
-        JSObject ret = new JSObject();
-        ret.put("connected", connected);
-        call.resolve(ret);
-    }
-
-    /**
-     * Thiết lập lại protocol
+     * Thiết lập lại protocol (POS / CPCL / TSPL / ZPL)
      */
     @PluginMethod
     public void setProtocol(PluginCall call) {
-        implementation.setProtocol(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.setProtocol(options, call);
     }
 
     /**
@@ -262,7 +259,8 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void configText(PluginCall call) {
-        implementation.configText(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.configText(options, call);
     }
 
     /**
@@ -270,7 +268,8 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void configBarcode(PluginCall call) {
-        implementation.configBarcode(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.configBarcode(options, call);
     }
 
     /**
@@ -278,7 +277,8 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void configQRCode(PluginCall call) {
-        implementation.configQRCode(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.configQRCode(options, call);
     }
 
     /**
@@ -286,14 +286,18 @@ public class CapacitorXprinterPlugin extends Plugin {
      */
     @PluginMethod
     public void configImage(PluginCall call) {
-        implementation.configImage(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.configImage(options, call);
     }
 
     /**
-     * Cấu hình cho in label
+     * Cấu hình cho in label (CPCL/TSPL/ZPL)
      */
     @PluginMethod
     public void configLabel(PluginCall call) {
-        implementation.configLabel(call.getData(), call);
+        JSObject options = call.getData();
+        implementation.configLabel(options, call);
     }
+
+}
 

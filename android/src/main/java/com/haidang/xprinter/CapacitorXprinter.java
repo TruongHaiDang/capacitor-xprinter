@@ -285,8 +285,6 @@ public class CapacitorXprinter {
         }
     }
 
-}
-
     public void printQRCode(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
@@ -593,7 +591,7 @@ public class CapacitorXprinter {
         try {
             currentPrinter.printerStatus(new net.posprinter.posprinterface.IStatusCallback() {
                 @Override
-                public void onStatus(int status) {
+                public void receive(int status) {
                     JSObject ret = new JSObject();
                     ret.put("code", 200);
                     ret.put("msg", "Lấy trạng thái thành công");
@@ -724,12 +722,12 @@ public class CapacitorXprinter {
         }
         
         try {
-            ((PosPrinterWrapper) currentPrinter).selfTest();
+            // Không hỗ trợ selfTest cho POSPrinter
             JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "Self test thành công");
+            ret.put("code", 501);
+            ret.put("msg", "Chức năng self test chưa được hỗ trợ cho POSPrinter");
             ret.put("data", null);
-            call.resolve(ret);
+            call.reject("Chức năng self test chưa được hỗ trợ cho POSPrinter", (Exception) null, ret);
         } catch (Exception ex) {
             JSObject ret = new JSObject();
             ret.put("code", 500);
@@ -846,4 +844,5 @@ public class CapacitorXprinter {
         }
         return data;
     }
+}
 

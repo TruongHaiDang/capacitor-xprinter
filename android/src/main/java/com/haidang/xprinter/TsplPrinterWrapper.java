@@ -21,31 +21,6 @@ public class TsplPrinterWrapper implements PrinterBase {
         printer.printerStatus(callback);
     }
 
-    // Có thể bổ sung thêm các hàm đặc thù TSPLPrinter ở đây
-} 
-package com.haidang.xprinter;
-
-import net.posprinter.IDeviceConnection;
-import net.posprinter.TSPLPrinter;
-import net.posprinter.posprinterface.IStatusCallback;
-
-public class TsplPrinterWrapper implements PrinterBase {
-    private final TSPLPrinter printer;
-
-    public TsplPrinterWrapper(IDeviceConnection connection) {
-        this.printer = new TSPLPrinter(connection);
-    }
-
-    @Override
-    public void sendData(byte[] data) {
-        printer.sendData(data);
-    }
-
-    @Override
-    public void printerStatus(IStatusCallback callback) {
-        printer.printerStatus(callback);
-    }
-
     /**
      * In văn bản TSPL
      * @param text Nội dung văn bản
@@ -57,7 +32,7 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param yScale Tỷ lệ Y
      */
     public void printText(String text, int x, int y, String font, int rotation, int xScale, int yScale) {
-        printer.printText(text, x, y, font, rotation, xScale, yScale);
+        printer.text(x, y, font, rotation, xScale, yScale, text);
         printer.sendData(new byte[0]);
     }
 
@@ -73,7 +48,7 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param model Model (M1, M2)
      */
     public void printQRCode(String data, int x, int y, String ecLevel, int cellWidth, String mode, int rotation, String model) {
-        printer.printQRCode(data, x, y, ecLevel, cellWidth, mode, rotation, model);
+        printer.qrcode(x, y, ecLevel, cellWidth, mode, rotation, data);
         printer.sendData(new byte[0]);
     }
 
@@ -90,7 +65,7 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param wide Độ rộng wide
      */
     public void printBarcode(String data, int x, int y, String codeType, int height, int readable, int rotation, int narrow, int wide) {
-        printer.printBarcode(data, x, y, codeType, height, readable, rotation, narrow, wide);
+        printer.barcode(x, y, codeType, height, readable, rotation, narrow, wide, data);
         printer.sendData(new byte[0]);
     }
 
@@ -102,8 +77,13 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param mode Mode in
      */
     public void printImageFromPath(String imagePath, int x, int y, String mode) {
-        printer.printBitmap(imagePath, x, y, mode);
-        printer.sendData(new byte[0]);
+        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(imagePath);
+        if (bmp != null) {
+            printer.bitmap(x, y, 0, bmp.getWidth(), bmp);
+            printer.sendData(new byte[0]);
+        } else {
+            throw new RuntimeException("Không đọc được file hình ảnh: " + imagePath);
+        }
     }
 
     /**
@@ -114,8 +94,14 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param mode Mode in
      */
     public void printImageBase64(String base64, int x, int y, String mode) {
-        printer.printBitmapBase64(base64, x, y, mode);
-        printer.sendData(new byte[0]);
+        try {
+            byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
+            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            printer.bitmap(x, y, 0, bmp.getWidth(), bmp);
+            printer.sendData(new byte[0]);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi giải mã base64 hình ảnh", e);
+        }
     }
 
     /**
@@ -124,7 +110,7 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param height Chiều cao (mm)
      */
     public void setSize(double width, double height) {
-        printer.setSize(width, height);
+        printer.sizeMm(width, height);
     }
 
     /**
@@ -133,7 +119,7 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param offset Offset (mm)
      */
     public void setGap(double gap, double offset) {
-        printer.setGap(gap, offset);
+        printer.gapMm(gap, offset);
     }
 
     /**
@@ -141,14 +127,14 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param direction Hướng (0-normal, 1-reverse)
      */
     public void setDirection(int direction) {
-        printer.setDirection(direction);
+        printer.direction(direction);
     }
 
     /**
      * Clear buffer
      */
     public void clearBuffer() {
-        printer.clearBuffer();
+        printer.cls();
     }
 
     /**
@@ -157,7 +143,7 @@ public class TsplPrinterWrapper implements PrinterBase {
      * @param copies Số bản sao
      */
     public void printLabel(int sets, int copies) {
-        printer.print(sets, copies);
+        printer.print(sets);
         printer.sendData(new byte[0]);
     }
 

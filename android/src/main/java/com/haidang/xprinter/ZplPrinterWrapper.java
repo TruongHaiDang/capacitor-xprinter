@@ -21,31 +21,6 @@ public class ZplPrinterWrapper implements PrinterBase {
         printer.printerStatus(callback);
     }
 
-    // Có thể bổ sung thêm các hàm đặc thù ZPLPrinter ở đây
-} 
-package com.haidang.xprinter;
-
-import net.posprinter.IDeviceConnection;
-import net.posprinter.ZPLPrinter;
-import net.posprinter.posprinterface.IStatusCallback;
-
-public class ZplPrinterWrapper implements PrinterBase {
-    private final ZPLPrinter printer;
-
-    public ZplPrinterWrapper(IDeviceConnection connection) {
-        this.printer = new ZPLPrinter(connection);
-    }
-
-    @Override
-    public void sendData(byte[] data) {
-        printer.sendData(data);
-    }
-
-    @Override
-    public void printerStatus(IStatusCallback callback) {
-        printer.printerStatus(callback);
-    }
-
     /**
      * In văn bản ZPL
      * @param text Nội dung văn bản
@@ -57,7 +32,8 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param width Độ rộng font
      */
     public void printText(String text, int x, int y, String font, String orientation, int height, int width) {
-        printer.printText(text, x, y, font, orientation, height, width);
+        char fontChar = font != null && font.length() > 0 ? font.charAt(0) : 'A';
+        printer.addText(x, y, fontChar, orientation, width, height, text);
         printer.sendData(new byte[0]);
     }
 
@@ -72,7 +48,7 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param maskValue Mask value (0-7)
      */
     public void printQRCode(String data, int x, int y, int model, int magnification, String errorCorrection, int maskValue) {
-        printer.printQRCode(data, x, y, model, magnification, errorCorrection, maskValue);
+        printer.addQRCode(x, y, magnification, data);
         printer.sendData(new byte[0]);
     }
 
@@ -89,7 +65,7 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param checkDigit Check digit (Y/N)
      */
     public void printBarcode(String data, int x, int y, String codeType, String orientation, int height, String printInterpretationLine, String printInterpretationLineAbove, String checkDigit) {
-        printer.printBarcode(data, x, y, codeType, orientation, height, printInterpretationLine, printInterpretationLineAbove, checkDigit);
+        printer.addBarcode(x, y, codeType, data, height);
         printer.sendData(new byte[0]);
     }
 
@@ -102,8 +78,13 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param height Chiều cao
      */
     public void printImageFromPath(String imagePath, int x, int y, int width, int height) {
-        printer.printGraphic(imagePath, x, y, width, height);
-        printer.sendData(new byte[0]);
+        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(imagePath);
+        if (bmp != null) {
+            printer.printBitmap(x, y, bmp, width);
+            printer.sendData(new byte[0]);
+        } else {
+            throw new RuntimeException("Không đọc được file hình ảnh: " + imagePath);
+        }
     }
 
     /**
@@ -115,22 +96,28 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param height Chiều cao
      */
     public void printImageBase64(String base64, int x, int y, int width, int height) {
-        printer.printGraphicBase64(base64, x, y, width, height);
-        printer.sendData(new byte[0]);
+        try {
+            byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
+            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            printer.printBitmap(x, y, bmp, width);
+            printer.sendData(new byte[0]);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi giải mã base64 hình ảnh", e);
+        }
     }
 
     /**
      * Bắt đầu format label
      */
     public void startFormat() {
-        printer.startFormat();
+        printer.addStart();
     }
 
     /**
      * Kết thúc format label
      */
     public void endFormat() {
-        printer.endFormat();
+        printer.addEnd();
         printer.sendData(new byte[0]);
     }
 
@@ -143,37 +130,11 @@ public class ZplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * Thiết lập home position
-     * @param x Tọa độ X
-     * @param y Tọa độ Y
-     */
-    public void setLabelHome(int x, int y) {
-        printer.setLabelHome(x, y);
-    }
-
-    /**
-     * Thiết lập độ đậm in
-     * @param darkness Độ đậm (0-30)
-     */
-    public void setPrintDarkness(int darkness) {
-        printer.setPrintDarkness(darkness);
-    }
-
-    /**
      * Thiết lập tốc độ in
      * @param speed Tốc độ (2-14)
      */
     public void setPrintSpeed(int speed) {
         printer.setPrintSpeed(speed);
-    }
-
-    /**
-     * In số lượng label
-     * @param quantity Số lượng
-     */
-    public void printQuantity(int quantity) {
-        printer.printQuantity(quantity);
-        printer.sendData(new byte[0]);
     }
 
     /**

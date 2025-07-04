@@ -21,8 +21,6 @@ public class CpclPrinterWrapper implements PrinterBase {
         printer.printerStatus(callback);
     }
 
-    // Có thể bổ sung thêm các hàm đặc thù CPCLPrinter ở đây
-} 
     /**
      * In văn bản CPCL
      * @param text Nội dung văn bản
@@ -32,7 +30,7 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param rotation Góc xoay (0, 90, 180, 270)
      */
     public void printText(String text, int x, int y, int font, int rotation) {
-        printer.printText(text, x, y, font, rotation);
+        printer.addText(x, y, String.valueOf(rotation), String.valueOf(font), text);
         printer.sendData(new byte[0]);
     }
 
@@ -45,7 +43,7 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param unitWidth Độ rộng đơn vị
      */
     public void printQRCode(String data, int x, int y, int model, int unitWidth) {
-        printer.printQRCode(data, x, y, model, unitWidth);
+        printer.addQRCode(x, y, model, unitWidth, data);
         printer.sendData(new byte[0]);
     }
 
@@ -59,7 +57,7 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param readable Hiển thị text (0-không, 1-có)
      */
     public void printBarcode(String data, int x, int y, String codeType, int height, int readable) {
-        printer.printBarcode(data, x, y, codeType, height, readable);
+        printer.addBarcode(x, y, codeType, height, data);
         printer.sendData(new byte[0]);
     }
 
@@ -71,8 +69,13 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param mode Mode in (0-overwrite, 1-or, 2-xor)
      */
     public void printImageFromPath(String imagePath, int x, int y, int mode) {
-        printer.printGraphics(imagePath, x, y, mode);
-        printer.sendData(new byte[0]);
+        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(imagePath);
+        if (bmp != null) {
+            printer.addEGraphics(x, y, bmp.getWidth(), bmp);
+            printer.sendData(new byte[0]);
+        } else {
+            throw new RuntimeException("Không đọc được file hình ảnh: " + imagePath);
+        }
     }
 
     /**
@@ -83,8 +86,14 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param mode Mode in (0-overwrite, 1-or, 2-xor)
      */
     public void printImageBase64(String base64, int x, int y, int mode) {
-        printer.printGraphicsBase64(base64, x, y, mode);
-        printer.sendData(new byte[0]);
+        try {
+            byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
+            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            printer.addEGraphics(x, y, bmp.getWidth(), bmp);
+            printer.sendData(new byte[0]);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi giải mã base64 hình ảnh", e);
+        }
     }
 
     /**
@@ -94,14 +103,14 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param quantity Số lượng
      */
     public void setLabel(int width, int height, int quantity) {
-        printer.setLabel(width, height, quantity);
+        printer.initializePrinter(height, quantity);
     }
 
     /**
      * In label
      */
     public void printLabel() {
-        printer.print();
+        printer.addPrint();
         printer.sendData(new byte[0]);
     }
 
@@ -112,4 +121,5 @@ public class CpclPrinterWrapper implements PrinterBase {
     public void sendCommand(String command) {
         printer.sendData(command.getBytes());
     }
+} 
 
