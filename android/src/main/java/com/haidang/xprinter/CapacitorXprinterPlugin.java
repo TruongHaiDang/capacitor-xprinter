@@ -125,3 +125,175 @@ public class CapacitorXprinterPlugin extends Plugin {
     }
 
 }
+
+    /**
+     * In mã QR
+     */
+    @PluginMethod
+    public void printQRCode(PluginCall call) {
+        implementation.printQRCode(call.getData(), call);
+    }
+
+    /**
+     * In mã vạch
+     */
+    @PluginMethod
+    public void printBarcode(PluginCall call) {
+        implementation.printBarcode(call.getData(), call);
+    }
+
+    /**
+     * In hình ảnh từ đường dẫn
+     */
+    @PluginMethod
+    public void printImageFromPath(PluginCall call) {
+        implementation.printImageFromPath(call.getData(), call);
+    }
+
+    /**
+     * In hình ảnh từ base64
+     */
+    @PluginMethod
+    public void printImageBase64(PluginCall call) {
+        implementation.printImageBase64(call.getData(), call);
+    }
+
+    /**
+     * Cắt giấy (POSPrinter)
+     */
+    @PluginMethod
+    public void cutPaper(PluginCall call) {
+        implementation.cutPaper(call);
+    }
+
+    /**
+     * Mở két tiền (POSPrinter)
+     */
+    @PluginMethod
+    public void openCashDrawer(PluginCall call) {
+        implementation.openCashDrawer(call.getData(), call);
+    }
+
+    /**
+     * Kiểm tra trạng thái máy in
+     */
+    @PluginMethod
+    public void getPrinterStatus(PluginCall call) {
+        implementation.getPrinterStatus(call);
+    }
+
+    /**
+     * Đọc dữ liệu phản hồi từ máy in
+     */
+    @PluginMethod
+    public void readData(PluginCall call) {
+        implementation.readData(call);
+    }
+
+    /**
+     * Gửi dữ liệu tùy ý (raw byte)
+     */
+    @PluginMethod
+    public void sendRawData(PluginCall call) {
+        implementation.sendRawData(call.getData(), call);
+    }
+
+    /**
+     * In nội dung dạng label cho CPCL / TSPL / ZPL
+     */
+    @PluginMethod
+    public void printLabel(PluginCall call) {
+        implementation.printLabel(call.getData(), call);
+    }
+
+    /**
+     * Thiết lập lại máy in
+     */
+    @PluginMethod
+    public void resetPrinter(PluginCall call) {
+        implementation.resetPrinter(call);
+    }
+
+    /**
+     * Thực hiện in tự test của máy in
+     */
+    @PluginMethod
+    public void selfTest(PluginCall call) {
+        implementation.selfTest(call);
+    }
+
+    /**
+     * In văn bản với encoding cụ thể
+     */
+    @PluginMethod
+    public void printEncodedText(PluginCall call) {
+        implementation.printEncodedText(call.getData(), call);
+    }
+
+    /**
+     * Gửi nhiều lệnh liên tiếp
+     */
+    @PluginMethod
+    public void sendBatchCommands(PluginCall call) {
+        implementation.sendBatchCommands(call.getData(), call);
+    }
+
+    /**
+     * Kiểm tra kết nối hiện tại có đang hoạt động không
+     */
+    @PluginMethod
+    public void isConnected(PluginCall call) {
+        boolean connected = implementation.isConnected();
+        JSObject ret = new JSObject();
+        ret.put("connected", connected);
+        call.resolve(ret);
+    }
+
+    /**
+     * Thiết lập lại protocol
+     */
+    @PluginMethod
+    public void setProtocol(PluginCall call) {
+        implementation.setProtocol(call.getData(), call);
+    }
+
+    /**
+     * Cấu hình cho in text
+     */
+    @PluginMethod
+    public void configText(PluginCall call) {
+        implementation.configText(call.getData(), call);
+    }
+
+    /**
+     * Cấu hình cho in barcode
+     */
+    @PluginMethod
+    public void configBarcode(PluginCall call) {
+        implementation.configBarcode(call.getData(), call);
+    }
+
+    /**
+     * Cấu hình cho in QRCode
+     */
+    @PluginMethod
+    public void configQRCode(PluginCall call) {
+        implementation.configQRCode(call.getData(), call);
+    }
+
+    /**
+     * Cấu hình cho in hình ảnh
+     */
+    @PluginMethod
+    public void configImage(PluginCall call) {
+        implementation.configImage(call.getData(), call);
+    }
+
+    /**
+     * Cấu hình cho in label
+     */
+    @PluginMethod
+    public void configLabel(PluginCall call) {
+        implementation.configLabel(call.getData(), call);
+    }
+

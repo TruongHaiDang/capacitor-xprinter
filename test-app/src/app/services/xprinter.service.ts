@@ -69,4 +69,88 @@ export class XprinterService {
   async printText(text: string, alignment: 'left' | 'center' | 'right' = 'left', textSize = 0, attribute = 0) {
     return CapacitorXprinter.printText({ text, alignment, textSize, attribute });
   }
+
+  async printQRCode(options: any) {
+    return CapacitorXprinter.printQRCode(options);
+  }
+
+  async printBarcode(options: any) {
+    return CapacitorXprinter.printBarcode(options);
+  }
+
+  async printImageFromPath(options: any) {
+    return CapacitorXprinter.printImageFromPath(options);
+  }
+
+  async printImageBase64(options: any) {
+    return CapacitorXprinter.printImageBase64(options);
+  }
+
+  async cutPaper() {
+    return CapacitorXprinter.cutPaper();
+  }
+
+  async openCashDrawer(options?: { pinNum?: number; onTime?: number; offTime?: number }) {
+    return CapacitorXprinter.openCashDrawer(options || {});
+  }
+
+  async getPrinterStatus() {
+    return CapacitorXprinter.getPrinterStatus();
+  }
+
+  async readData() {
+    return CapacitorXprinter.readData();
+  }
+
+  async sendRawData(options: { hex: string }) {
+    return CapacitorXprinter.sendRawData(options);
+  }
+
+  async printLabel(options: { command: string }) {
+    return CapacitorXprinter.printLabel(options);
+  }
+
+  async resetPrinter() {
+    return CapacitorXprinter.resetPrinter();
+  }
+
+  async selfTest() {
+    return CapacitorXprinter.selfTest();
+  }
+
+  async printEncodedText(options: { text: string; encoding: 'gbk' | 'utf-8' | 'shift-jis' }) {
+    return CapacitorXprinter.printEncodedText(options);
+  }
+
+  async sendBatchCommands(options: { commands: string[]; delayBetween?: number }) {
+    return CapacitorXprinter.sendBatchCommands(options);
+  }
+
+  async isConnected(): Promise<{ connected: boolean }> {
+    return CapacitorXprinter.isConnected();
+  }
+
+  async setProtocol(protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL') {
+    return CapacitorXprinter.setProtocol({ protocol });
+  }
+
+  async configText(options: Record<string, any>) {
+    return CapacitorXprinter.configText(options);
+  }
+
+  async configBarcode(options: Record<string, any>) {
+    return CapacitorXprinter.configBarcode(options);
+  }
+
+  async configQRCode(options: Record<string, any>) {
+    return CapacitorXprinter.configQRCode(options);
+  }
+
+  async configImage(options: Record<string, any>) {
+    return CapacitorXprinter.configImage(options);
+  }
+
+  async configLabel(options: Record<string, any>) {
+    return CapacitorXprinter.configLabel(options);
+  }
 }
