@@ -15,16 +15,16 @@
         <div class="print-box" (click)="onPrintText()">Text (văn bản)</div>
       </ion-col>
       <ion-col size="4">
-        <div class="print-box">QRCode (mã QR)</div>
+        <div class="print-box" (click)="onPrintQr()">QRCode (mã QR)</div>
       </ion-col>
       <ion-col size="4">
-        <div class="print-box">Barcode 1D (mã vạch một chiều)</div>
+        <div class="print-box" (click)="onPrintBarcode()">Barcode 1D (mã vạch một chiều)</div>
       </ion-col>
     </ion-row>
 
     <ion-row>
       <ion-col size="4">
-        <div class="print-box">Image (hình ảnh)</div>
+        <div class="print-box" (click)="onPrintImage()">Image (hình ảnh)</div>
       </ion-col>
       <ion-col size="4">
         <div class="print-box">Raw data<br/>(dữ liệu hex)</div>

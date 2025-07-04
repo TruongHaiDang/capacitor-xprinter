@@ -285,4 +285,156 @@ public class CapacitorXprinter {
         }
     }
 
+    /**
+     * In mã QR theo ngôn ngữ của máy in hiện tại.
+     */
+    public void printQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", null, null);
+            return;
+        }
+        String data = options.getString("data");
+        if (data == null) {
+            call.reject("Thiếu dữ liệu QR", null, null);
+            return;
+        }
+        int module = options.has("moduleSize") ? options.getInteger("moduleSize") : 4;
+        int ecLevel = options.has("ecLevel") ? options.getInteger("ecLevel") : 0;
+        String alignStr = options.getString("alignment", "left");
+        int alignment = 0;
+        switch (alignStr.toLowerCase()) {
+            case "center": alignment = 1; break;
+            case "right": alignment = 2; break;
+            default: alignment = 0; break;
+        }
+        try {
+            currentPrinter.printQRCode(data, module, ecLevel, alignment);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    /**
+     * In mã vạch 1D.
+     */
+    public void printBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", null, null);
+            return;
+        }
+        String data = options.getString("data");
+        if (data == null) {
+            call.reject("Thiếu dữ liệu", null, null);
+            return;
+        }
+        int codeType = options.getInteger("codeType");
+        int width = options.has("width") ? options.getInteger("width") : 2;
+        int height = options.has("height") ? options.getInteger("height") : 80;
+        int textPosition = options.has("textPosition") ? options.getInteger("textPosition") : 0;
+        String alignStr = options.getString("alignment", "left");
+        int alignment = 0;
+        switch (alignStr.toLowerCase()) {
+            case "center": alignment = 1; break;
+            case "right": alignment = 2; break;
+            default: alignment = 0; break;
+        }
+        try {
+            currentPrinter.printBarcode(data, codeType, width, height, alignment, textPosition);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    /**
+     * In hình ảnh từ đường dẫn.
+     */
+    public void printImageFromPath(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", null, null);
+            return;
+        }
+        String path = options.getString("imagePath");
+        if (path == null) {
+            call.reject("Thiếu đường dẫn", null, null);
+            return;
+        }
+        int width = options.has("width") ? options.getInteger("width") : 200;
+        String alignStr = options.getString("alignment", "left");
+        int alignment = 0;
+        switch (alignStr.toLowerCase()) {
+            case "center": alignment = 1; break;
+            case "right": alignment = 2; break;
+            default: alignment = 0; break;
+        }
+        try {
+            currentPrinter.printImage(path, width, alignment);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    /**
+     * In hình ảnh base64.
+     */
+    public void printImageBase64(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", null, null);
+            return;
+        }
+        String base64 = options.getString("base64");
+        if (base64 == null) {
+            call.reject("Thiếu dữ liệu ảnh", null, null);
+            return;
+        }
+        int width = options.has("width") ? options.getInteger("width") : 200;
+        String alignStr = options.getString("alignment", "left");
+        int alignment = 0;
+        switch (alignStr.toLowerCase()) {
+            case "center": alignment = 1; break;
+            case "right": alignment = 2; break;
+            default: alignment = 0; break;
+        }
+        try {
+            currentPrinter.printImageBase64(base64, width, alignment);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
 }
