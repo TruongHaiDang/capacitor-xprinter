@@ -286,3 +286,564 @@ public class CapacitorXprinter {
     }
 
 }
+
+    public void printQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String data = options.getString("data");
+        if (data == null) {
+            call.reject("Thiếu dữ liệu QR code", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            if (currentPrinter instanceof PosPrinterWrapper) {
+                int moduleSize = options.has("moduleSize") ? options.getInteger("moduleSize") : 4;
+                int ecLevel = options.has("ecLevel") ? options.getInteger("ecLevel") : 0;
+                String alignStr = options.getString("alignment", "left");
+                int alignment = 0;
+                switch (alignStr.toLowerCase()) {
+                    case "center": alignment = 1; break;
+                    case "right": alignment = 2; break;
+                    default: alignment = 0; break;
+                }
+                ((PosPrinterWrapper) currentPrinter).printQRCode(data, moduleSize, ecLevel, alignment);
+            } else if (currentPrinter instanceof CpclPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int model = options.has("model") ? options.getInteger("model") : 2;
+                int unitWidth = options.has("unitWidth") ? options.getInteger("unitWidth") : 6;
+                ((CpclPrinterWrapper) currentPrinter).printQRCode(data, x, y, model, unitWidth);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String ecLevel = options.getString("ecLevel", "M");
+                int cellWidth = options.has("cellWidth") ? options.getInteger("cellWidth") : 4;
+                String mode = options.getString("mode", "A");
+                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
+                String model = options.getString("model", "M2");
+                ((TsplPrinterWrapper) currentPrinter).printQRCode(data, x, y, ecLevel, cellWidth, mode, rotation, model);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int model = options.has("model") ? options.getInteger("model") : 2;
+                int magnification = options.has("magnification") ? options.getInteger("magnification") : 3;
+                String errorCorrection = options.getString("errorCorrection", "M");
+                int maskValue = options.has("maskValue") ? options.getInteger("maskValue") : 0;
+                ((ZplPrinterWrapper) currentPrinter).printQRCode(data, x, y, model, magnification, errorCorrection, maskValue);
+            }
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In QR code thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String data = options.getString("data");
+        if (data == null) {
+            call.reject("Thiếu dữ liệu barcode", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            if (currentPrinter instanceof PosPrinterWrapper) {
+                int codeType = options.has("codeType") ? options.getInteger("codeType") : 73; // CODE128
+                int width = options.has("width") ? options.getInteger("width") : 2;
+                int height = options.has("height") ? options.getInteger("height") : 162;
+                String alignStr = options.getString("alignment", "left");
+                int alignment = 0;
+                switch (alignStr.toLowerCase()) {
+                    case "center": alignment = 1; break;
+                    case "right": alignment = 2; break;
+                    default: alignment = 0; break;
+                }
+                int textPosition = options.has("textPosition") ? options.getInteger("textPosition") : 2;
+                ((PosPrinterWrapper) currentPrinter).printBarcode(data, codeType, width, height, alignment, textPosition);
+            } else if (currentPrinter instanceof CpclPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String codeType = options.getString("codeType", "128");
+                int height = options.has("height") ? options.getInteger("height") : 32;
+                int readable = options.has("readable") ? options.getInteger("readable") : 1;
+                ((CpclPrinterWrapper) currentPrinter).printBarcode(data, x, y, codeType, height, readable);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String codeType = options.getString("codeType", "128");
+                int height = options.has("height") ? options.getInteger("height") : 40;
+                int readable = options.has("readable") ? options.getInteger("readable") : 1;
+                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
+                int narrow = options.has("narrow") ? options.getInteger("narrow") : 2;
+                int wide = options.has("wide") ? options.getInteger("wide") : 2;
+                ((TsplPrinterWrapper) currentPrinter).printBarcode(data, x, y, codeType, height, readable, rotation, narrow, wide);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String codeType = options.getString("codeType", "^BC");
+                String orientation = options.getString("orientation", "N");
+                int height = options.has("height") ? options.getInteger("height") : 100;
+                String printInterpretationLine = options.getString("printInterpretationLine", "Y");
+                String printInterpretationLineAbove = options.getString("printInterpretationLineAbove", "N");
+                String checkDigit = options.getString("checkDigit", "N");
+                ((ZplPrinterWrapper) currentPrinter).printBarcode(data, x, y, codeType, orientation, height, printInterpretationLine, printInterpretationLineAbove, checkDigit);
+            }
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In barcode thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printImageFromPath(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String imagePath = options.getString("imagePath");
+        if (imagePath == null) {
+            call.reject("Thiếu đường dẫn hình ảnh", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            if (currentPrinter instanceof PosPrinterWrapper) {
+                int width = options.has("width") ? options.getInteger("width") : 0;
+                String alignStr = options.getString("alignment", "left");
+                int alignment = 0;
+                switch (alignStr.toLowerCase()) {
+                    case "center": alignment = 1; break;
+                    case "right": alignment = 2; break;
+                    default: alignment = 0; break;
+                }
+                ((PosPrinterWrapper) currentPrinter).printImageFromPath(imagePath, width, alignment);
+            } else if (currentPrinter instanceof CpclPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int mode = options.has("mode") ? options.getInteger("mode") : 0;
+                ((CpclPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String mode = options.getString("mode", "OVERWRITE");
+                ((TsplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int width = options.has("width") ? options.getInteger("width") : 200;
+                int height = options.has("height") ? options.getInteger("height") : 200;
+                ((ZplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, width, height);
+            }
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In hình ảnh thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printImageBase64(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String base64 = options.getString("base64");
+        if (base64 == null) {
+            call.reject("Thiếu dữ liệu base64", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            if (currentPrinter instanceof PosPrinterWrapper) {
+                int width = options.has("width") ? options.getInteger("width") : 0;
+                String alignStr = options.getString("alignment", "left");
+                int alignment = 0;
+                switch (alignStr.toLowerCase()) {
+                    case "center": alignment = 1; break;
+                    case "right": alignment = 2; break;
+                    default: alignment = 0; break;
+                }
+                ((PosPrinterWrapper) currentPrinter).printImageBase64(base64, width, alignment);
+            } else if (currentPrinter instanceof CpclPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int mode = options.has("mode") ? options.getInteger("mode") : 0;
+                ((CpclPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, mode);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String mode = options.getString("mode", "OVERWRITE");
+                ((TsplPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, mode);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int width = options.has("width") ? options.getInteger("width") : 200;
+                int height = options.has("height") ? options.getInteger("height") : 200;
+                ((ZplPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, width, height);
+            }
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In hình ảnh base64 thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void cutPaper(PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng cắt giấy chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            ((PosPrinterWrapper) currentPrinter).cutPaper();
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Cắt giấy thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void openCashDrawer(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng mở két tiền chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            int pinNum = options.has("pinNum") ? options.getInteger("pinNum") : 0;
+            int onTime = options.has("onTime") ? options.getInteger("onTime") : 100;
+            int offTime = options.has("offTime") ? options.getInteger("offTime") : 100;
+            ((PosPrinterWrapper) currentPrinter).openCashDrawer(pinNum, onTime, offTime);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Mở két tiền thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void getPrinterStatus(PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            currentPrinter.printerStatus(new net.posprinter.posprinterface.IStatusCallback() {
+                @Override
+                public void onStatus(int status) {
+                    JSObject ret = new JSObject();
+                    ret.put("code", 200);
+                    ret.put("msg", "Lấy trạng thái thành công");
+                    ret.put("data", status);
+                    call.resolve(ret);
+                }
+            });
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void readData(PluginCall call) {
+        // Chức năng đọc dữ liệu từ máy in - cần implement tùy theo yêu cầu cụ thể
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng đọc dữ liệu chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void sendRawData(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String hex = options.getString("hex");
+        if (hex == null) {
+            call.reject("Thiếu dữ liệu hex", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            // Chuyển đổi hex string thành byte array
+            byte[] data = hexStringToByteArray(hex);
+            currentPrinter.sendData(data);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Gửi dữ liệu thô thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printLabel(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String command = options.getString("command");
+        if (command == null) {
+            call.reject("Thiếu lệnh command", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            if (currentPrinter instanceof CpclPrinterWrapper) {
+                ((CpclPrinterWrapper) currentPrinter).sendCommand(command);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                ((TsplPrinterWrapper) currentPrinter).sendCommand(command);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                ((ZplPrinterWrapper) currentPrinter).sendCommand(command);
+            } else {
+                call.reject("Chức năng in label không hỗ trợ cho POSPrinter", (Exception) null, null);
+                return;
+            }
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In label thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void resetPrinter(PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng reset chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            ((PosPrinterWrapper) currentPrinter).resetPrinter();
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Reset máy in thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void selfTest(PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng self test chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            ((PosPrinterWrapper) currentPrinter).selfTest();
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Self test thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void printEncodedText(JSObject options, PluginCall call) {
+        // Chức năng in text với encoding - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng in text với encoding chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void sendBatchCommands(JSObject options, PluginCall call) {
+        // Chức năng gửi nhiều lệnh liên tiếp - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng gửi batch commands chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public boolean isConnected() {
+        return currentDevice != null && currentPrinter != null;
+    }
+
+    public void setProtocol(JSObject options, PluginCall call) {
+        if (currentDevice == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String protocol = options.getString("protocol");
+        if (protocol == null) {
+            call.reject("Thiếu thông tin protocol", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            currentPrinter = PrinterFactory.createPrinter(protocol, currentDevice);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Thiết lập protocol thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void configText(JSObject options, PluginCall call) {
+        // Chức năng cấu hình text - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng config text chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configBarcode(JSObject options, PluginCall call) {
+        // Chức năng cấu hình barcode - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng config barcode chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configQRCode(JSObject options, PluginCall call) {
+        // Chức năng cấu hình QR code - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng config QR code chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configImage(JSObject options, PluginCall call) {
+        // Chức năng cấu hình image - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng config image chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configLabel(JSObject options, PluginCall call) {
+        // Chức năng cấu hình label - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng config label chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    /**
+     * Chuyển đổi hex string thành byte array
+     */
+    private byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                 + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+

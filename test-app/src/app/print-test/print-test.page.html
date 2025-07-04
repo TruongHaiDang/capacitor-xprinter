@@ -9,28 +9,118 @@
 </ion-header>
 
 <ion-content class="ion-padding">
+  <!-- Protocol Selection -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Protocol Selection</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-segment [(ngModel)]="selectedProtocol" (ionChange)="onProtocolChange()">
+        <ion-segment-button value="POS">
+          <ion-label>POS</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="CPCL">
+          <ion-label>CPCL</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="TSPL">
+          <ion-label>TSPL</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="ZPL">
+          <ion-label>ZPL</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+    </ion-card-content>
+  </ion-card>
+
+  <!-- Print Functions -->
   <ion-grid>
     <ion-row>
-      <ion-col size="4">
-        <div class="print-box" (click)="onPrintText()">Text (văn bản)</div>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onPrintText()">
+          <ion-icon name="text-outline"></ion-icon>
+          <p>Text</p>
+        </div>
       </ion-col>
-      <ion-col size="4">
-        <div class="print-box">QRCode (mã QR)</div>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onPrintQRCode()">
+          <ion-icon name="qr-code-outline"></ion-icon>
+          <p>QR Code</p>
+        </div>
       </ion-col>
-      <ion-col size="4">
-        <div class="print-box">Barcode 1D (mã vạch một chiều)</div>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onPrintBarcode()">
+          <ion-icon name="barcode-outline"></ion-icon>
+          <p>Barcode</p>
+        </div>
       </ion-col>
     </ion-row>
 
     <ion-row>
-      <ion-col size="4">
-        <div class="print-box">Image (hình ảnh)</div>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onPrintImagePath()">
+          <ion-icon name="image-outline"></ion-icon>
+          <p>Image (Path)</p>
+        </div>
       </ion-col>
-      <ion-col size="4">
-        <div class="print-box">Raw data<br/>(dữ liệu hex)</div>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onPrintImageBase64()">
+          <ion-icon name="images-outline"></ion-icon>
+          <p>Image (Base64)</p>
+        </div>
       </ion-col>
-      <ion-col size="4">
-        <div class="print-box">Self-test<br/>(in kiểm tra máy in)</div>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onSendRawData()">
+          <ion-icon name="code-outline"></ion-icon>
+          <p>Raw Data</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <!-- POS Only Functions -->
+    <ion-row *ngIf="selectedProtocol === 'POS'">
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onCutPaper()">
+          <ion-icon name="cut-outline"></ion-icon>
+          <p>Cut Paper</p>
+        </div>
+      </ion-col>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onOpenCashDrawer()">
+          <ion-icon name="cash-outline"></ion-icon>
+          <p>Cash Drawer</p>
+        </div>
+      </ion-col>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onSelfTest()">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+          <p>Self Test</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <!-- Label Functions for CPCL/TSPL/ZPL -->
+    <ion-row *ngIf="selectedProtocol !== 'POS'">
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onPrintLabel()">
+          <ion-icon name="document-outline"></ion-icon>
+          <p>Print Label</p>
+        </div>
+      </ion-col>
+    </ion-row>
+
+    <!-- Utility Functions -->
+    <ion-row>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onGetPrinterStatus()">
+          <ion-icon name="information-circle-outline"></ion-icon>
+          <p>Printer Status</p>
+        </div>
+      </ion-col>
+      <ion-col size="6" size-md="4">
+        <div class="print-box" (click)="onResetPrinter()" *ngIf="selectedProtocol === 'POS'">
+          <ion-icon name="refresh-outline"></ion-icon>
+          <p>Reset Printer</p>
+        </div>
       </ion-col>
     </ion-row>
   </ion-grid>
