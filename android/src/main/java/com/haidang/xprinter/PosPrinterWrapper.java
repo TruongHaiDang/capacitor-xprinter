@@ -29,8 +29,6 @@ public class PosPrinterWrapper implements PrinterBase {
         printer.sendData(new byte[0]); // gửi dữ liệu
     }
 
-    // Có thể bổ sung thêm các hàm đặc thù POSPrinter ở đây
-} 
     /**
      * In mã QR
      * @param data Dữ liệu mã QR
@@ -54,7 +52,7 @@ public class PosPrinterWrapper implements PrinterBase {
      * @param textPosition Vị trí text (0-không in, 1-trên, 2-dưới, 3-cả hai)
      */
     public void printBarcode(String data, int codeType, int width, int height, int alignment, int textPosition) {
-        printer.printBarcode(data, codeType, width, height, alignment, textPosition);
+        printer.printBarCode(data, codeType, width, height, alignment, textPosition);
         printer.feedLine();
         printer.sendData(new byte[0]);
     }
@@ -66,7 +64,7 @@ public class PosPrinterWrapper implements PrinterBase {
      * @param alignment Căn lề
      */
     public void printImageFromPath(String imagePath, int width, int alignment) {
-        printer.printImage(imagePath, width, alignment);
+        printer.printBitmap(imagePath, alignment, width);
         printer.feedLine();
         printer.sendData(new byte[0]);
     }
@@ -78,9 +76,16 @@ public class PosPrinterWrapper implements PrinterBase {
      * @param alignment Căn lề
      */
     public void printImageBase64(String base64, int width, int alignment) {
-        printer.printImageBase64(base64, width, alignment);
-        printer.feedLine();
-        printer.sendData(new byte[0]);
+        // Chuyển base64 sang Bitmap rồi in
+        try {
+            byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
+            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            printer.printBitmap(bmp, alignment, width);
+            printer.feedLine();
+            printer.sendData(new byte[0]);
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi giải mã base64 hình ảnh", e);
+        }
     }
 
     /**
@@ -98,7 +103,7 @@ public class PosPrinterWrapper implements PrinterBase {
      * @param offTime Thời gian tắt (ms)
      */
     public void openCashDrawer(int pinNum, int onTime, int offTime) {
-        printer.openCashDrawer(pinNum, onTime, offTime);
+        printer.openCashBox(pinNum, onTime, offTime);
         printer.sendData(new byte[0]);
     }
 
@@ -106,15 +111,13 @@ public class PosPrinterWrapper implements PrinterBase {
      * Reset máy in
      */
     public void resetPrinter() {
-        printer.resetPrinter();
+        printer.initializePrinter();
         printer.sendData(new byte[0]);
     }
 
     /**
      * Self test
      */
-    public void selfTest() {
-        printer.selfTest();
-        printer.sendData(new byte[0]);
-    }
+    // Không có hàm selfTest trong POSPrinter, có thể bỏ hoặc implement nếu cần
+} 
 
