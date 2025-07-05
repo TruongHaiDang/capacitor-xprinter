@@ -148,7 +148,7 @@ public class CapacitorXprinterPlugin extends Plugin {
     @PluginMethod
     public void printImageFromPath(PluginCall call) {
         JSObject options = call.getData();
-        implementation.printImageFromPath(options, call);
+        implementation.printImageFromPath(options, getContext(), call);
     }
 
     /**

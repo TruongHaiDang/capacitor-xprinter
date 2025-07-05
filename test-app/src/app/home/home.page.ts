@@ -44,8 +44,8 @@ import { Router } from '@angular/router';
 export class HomePage implements OnInit {
   connectTypes: string[] = ['USB', 'BLUETOOTH', 'ETHERNET', 'SERIAL'];
   printLanguages: string[] = ['POS', 'CPCL', 'TSPL', 'ZPL'];
-  selectedConnectType: string = '';
-  selectedLanguage: string = '';
+  selectedConnectType: string = this.connectTypes[0];
+  selectedLanguage: string = this.printLanguages[0];
 
   serialPorts: string[] = [];
   selectedSerialPort: string = '';
@@ -53,13 +53,13 @@ export class HomePage implements OnInit {
   bluetoothDevices: string[] = [];
   selectedBluetoothMac: string = '';
 
-  ipAddress: string = '';
+  ipAddress: string = '172.16.32.170';
   macAddress: string = '';
 
   comPorts: string[] = [];
   selectedComPort: string = '';
   baudrateList: number[] = [110, 300, 600, 1200, 2400, 4800, 9600, 14400, 19200, 38400, 57600, 115200];
-  selectedBaudrate: number = 9600;
+  selectedBaudrate: number = this.baudrateList[6];
 
   connectStatus: string = '';
   isConnected: boolean = false;

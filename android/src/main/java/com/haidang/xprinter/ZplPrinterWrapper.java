@@ -3,6 +3,11 @@ package com.haidang.xprinter;
 import net.posprinter.IDeviceConnection;
 import net.posprinter.ZPLPrinter;
 import net.posprinter.posprinterface.IStatusCallback;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import java.io.InputStream;
 
 public class ZplPrinterWrapper implements PrinterBase {
     private final ZPLPrinter printer;
@@ -70,15 +75,26 @@ public class ZplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * In hình ảnh ZPL từ đường dẫn
-     * @param imagePath Đường dẫn hình ảnh
+     * In hình ảnh ZPL từ đường dẫn hoặc URI
+     * @param imagePath Đường dẫn hình ảnh hoặc content URI
      * @param x Tọa độ X
      * @param y Tọa độ Y
      * @param width Độ rộng
      * @param height Chiều cao
+     * @param context Context Android để đọc URI
      */
-    public void printImageFromPath(String imagePath, int x, int y, int width, int height) {
-        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(imagePath);
+    public void printImageFromPath(String imagePath, int x, int y, int width, int height, Context context) {
+        Bitmap bmp = null;
+        try {
+            if (imagePath != null && imagePath.startsWith("content://")) {
+                InputStream input = context.getContentResolver().openInputStream(Uri.parse(imagePath));
+                bmp = BitmapFactory.decodeStream(input);
+            } else {
+                bmp = BitmapFactory.decodeFile(imagePath);
+            }
+        } catch (Exception e) {
+            bmp = null;
+        }
         if (bmp != null) {
             printer.printBitmap(x, y, bmp, width);
             printer.sendData(new byte[0]);

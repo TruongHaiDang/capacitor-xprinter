@@ -3,6 +3,11 @@ package com.haidang.xprinter;
 import net.posprinter.IDeviceConnection;
 import net.posprinter.CPCLPrinter;
 import net.posprinter.posprinterface.IStatusCallback;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import java.io.InputStream;
 
 public class CpclPrinterWrapper implements PrinterBase {
     private final CPCLPrinter printer;
@@ -62,14 +67,25 @@ public class CpclPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * In hình ảnh CPCL từ đường dẫn
-     * @param imagePath Đường dẫn hình ảnh
+     * In hình ảnh CPCL từ đường dẫn hoặc URI
+     * @param imagePath Đường dẫn hình ảnh hoặc content URI
      * @param x Tọa độ X
      * @param y Tọa độ Y
      * @param mode Mode in (0-overwrite, 1-or, 2-xor)
+     * @param context Context Android để đọc URI
      */
-    public void printImageFromPath(String imagePath, int x, int y, int mode) {
-        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(imagePath);
+    public void printImageFromPath(String imagePath, int x, int y, int mode, Context context) {
+        Bitmap bmp = null;
+        try {
+            if (imagePath != null && imagePath.startsWith("content://")) {
+                InputStream input = context.getContentResolver().openInputStream(Uri.parse(imagePath));
+                bmp = BitmapFactory.decodeStream(input);
+            } else {
+                bmp = BitmapFactory.decodeFile(imagePath);
+            }
+        } catch (Exception e) {
+            bmp = null;
+        }
         if (bmp != null) {
             printer.addEGraphics(x, y, bmp.getWidth(), bmp);
             printer.sendData(new byte[0]);
