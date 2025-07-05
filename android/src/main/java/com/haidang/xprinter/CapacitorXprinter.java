@@ -417,18 +417,16 @@ public class CapacitorXprinter {
         }
     }
 
-    public void printImageFromPath(JSObject options, PluginCall call) {
+    public void printImageFromPath(JSObject options, Context context, PluginCall call) {
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
-        
         String imagePath = options.getString("imagePath");
         if (imagePath == null) {
             call.reject("Thiếu đường dẫn hình ảnh", (Exception) null, null);
             return;
         }
-        
         try {
             if (currentPrinter instanceof PosPrinterWrapper) {
                 int width = options.has("width") ? options.getInteger("width") : 0;
@@ -444,20 +442,19 @@ public class CapacitorXprinter {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
                 int mode = options.has("mode") ? options.getInteger("mode") : 0;
-                ((CpclPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode);
+                ((CpclPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode, context);
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
                 String mode = options.getString("mode", "OVERWRITE");
-                ((TsplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode);
+                ((TsplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode, context);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
                 int width = options.has("width") ? options.getInteger("width") : 200;
                 int height = options.has("height") ? options.getInteger("height") : 200;
-                ((ZplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, width, height);
+                ((ZplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, width, height, context);
             }
-            
             JSObject ret = new JSObject();
             ret.put("code", 200);
             ret.put("msg", "In hình ảnh thành công");

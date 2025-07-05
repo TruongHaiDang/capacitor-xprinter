@@ -3,6 +3,11 @@ package com.haidang.xprinter;
 import net.posprinter.IDeviceConnection;
 import net.posprinter.TSPLPrinter;
 import net.posprinter.posprinterface.IStatusCallback;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import java.io.InputStream;
 
 public class TsplPrinterWrapper implements PrinterBase {
     private final TSPLPrinter printer;
@@ -70,14 +75,25 @@ public class TsplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * In hình ảnh TSPL từ đường dẫn
-     * @param imagePath Đường dẫn hình ảnh
+     * In hình ảnh TSPL từ đường dẫn hoặc URI
+     * @param imagePath Đường dẫn hình ảnh hoặc content URI
      * @param x Tọa độ X
      * @param y Tọa độ Y
      * @param mode Mode in
+     * @param context Context Android để đọc URI
      */
-    public void printImageFromPath(String imagePath, int x, int y, String mode) {
-        android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeFile(imagePath);
+    public void printImageFromPath(String imagePath, int x, int y, String mode, Context context) {
+        Bitmap bmp = null;
+        try {
+            if (imagePath != null && imagePath.startsWith("content://")) {
+                InputStream input = context.getContentResolver().openInputStream(Uri.parse(imagePath));
+                bmp = BitmapFactory.decodeStream(input);
+            } else {
+                bmp = BitmapFactory.decodeFile(imagePath);
+            }
+        } catch (Exception e) {
+            bmp = null;
+        }
         if (bmp != null) {
             printer.bitmap(x, y, 0, bmp.getWidth(), bmp);
             printer.sendData(new byte[0]);
