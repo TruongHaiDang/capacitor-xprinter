@@ -1,5 +1,6 @@
 package com.haidang.xprinter;
 
+import android.util.Log;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -133,37 +134,66 @@ public class PosPrinterWrapper implements PrinterBase {
      * Chuyển một đường dẫn Uri / file path / data-uri thành Bitmap.
      */
     private Bitmap loadBitmapFromPath(String path, Context context) {
-        if (path == null) return null;
+        if (path == null) {
+            Log.e("XprinterPlugin", "loadBitmapFromPath: path=null");
+            return null;
+        }
 
         try {
-            // Trường hợp data URI:  data:image/png;base64,....
+            Log.e("XprinterPlugin", "loadBitmapFromPath: path=" + path);
+
+            // Trường hợp data URI:  data:image/png;base64,...
             if (path.startsWith("data:image")) {
+                Log.e("XprinterPlugin", "→ Đây là base64 image");
                 String base64Part = path.substring(path.indexOf(',') + 1);
                 byte[] decoded = Base64.decode(base64Part, Base64.DEFAULT);
                 return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
             }
 
             Uri uri = Uri.parse(path);
+            Log.e("XprinterPlugin", "→ URI scheme: " + uri.getScheme());
 
-            // Nếu là content:// – dùng ContentResolver
+            // Trường hợp content://
             if ("content".equalsIgnoreCase(uri.getScheme())) {
+                Log.e("XprinterPlugin", "→ Đây là content:// URI");
                 try (java.io.InputStream is = context.getContentResolver().openInputStream(uri)) {
-                    if (is == null) return null;
+                    if (is == null) {
+                        Log.e("XprinterPlugin", "→ InputStream từ ContentResolver null");
+                        return null;
+                    }
                     return BitmapFactory.decodeStream(is);
                 }
             }
 
-            // Nếu là file:// hoặc không có scheme – giải mã trực tiếp từ đường dẫn file
+            // Trường hợp file:// hoặc path thuần
             String realPath;
             if ("file".equalsIgnoreCase(uri.getScheme())) {
                 realPath = uri.getPath();
+                Log.e("XprinterPlugin", "→ Đây là file:// path, realPath=" + realPath);
             } else {
-                realPath = path; // Giả định đây là đường dẫn file thuần
+                realPath = path;
+                Log.e("XprinterPlugin", "→ Đây là path thuần: " + realPath);
             }
 
-            return BitmapFactory.decodeFile(realPath);
+            java.io.File f = new java.io.File(realPath);
+            if (!f.exists()) {
+                Log.e("XprinterPlugin", "⚠️ File KHÔNG tồn tại: " + realPath);
+            } else {
+                Log.e("XprinterPlugin", "✅ File tồn tại: " + realPath);
+            }
+
+            Bitmap bmp = BitmapFactory.decodeFile(realPath);
+            if (bmp == null) {
+                Log.e("XprinterPlugin", "⚠️ decodeFile trả về null");
+            } else {
+                Log.e("XprinterPlugin", "✅ decodeFile OK, size = " + bmp.getWidth() + "x" + bmp.getHeight());
+            }
+
+            return bmp;
+
         } catch (Exception e) {
-            return null; // Sẽ được xử lý ở hàm gọi
+            Log.e("XprinterPlugin", "❌ loadBitmapFromPath: exception=" + e.getMessage(), e);
+            return null;
         }
     }
 

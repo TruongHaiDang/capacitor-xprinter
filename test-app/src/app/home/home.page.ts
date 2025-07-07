@@ -44,7 +44,7 @@ import { Router } from '@angular/router';
 export class HomePage implements OnInit {
   connectTypes: string[] = ['USB', 'BLUETOOTH', 'ETHERNET', 'SERIAL'];
   printLanguages: string[] = ['POS', 'CPCL', 'TSPL', 'ZPL'];
-  selectedConnectType: string = this.connectTypes[0];
+  selectedConnectType: string = this.connectTypes[2];
   selectedLanguage: string = this.printLanguages[0];
 
   serialPorts: string[] = [];

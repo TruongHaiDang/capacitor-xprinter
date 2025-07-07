@@ -418,36 +418,49 @@ public class CapacitorXprinter {
     }
 
     public void printImageFromPath(JSObject options, Context context, PluginCall call) {
+        // Kiểm tra kết nối máy in
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
+
+        // Lấy đường dẫn ảnh từ JSObject
         String imagePath = options.getString("imagePath");
         if (imagePath == null) {
             call.reject("Thiếu đường dẫn hình ảnh", (Exception) null, null);
             return;
         }
+
+        // Loại bỏ tiền tố file:// nếu có (để tương thích với BitmapFactory.decodeFile)
+        if (imagePath.startsWith("file://")) {
+            imagePath = imagePath.replaceFirst("file://", "");
+        }
+
         try {
+            // Phân nhánh theo loại máy in
             if (currentPrinter instanceof PosPrinterWrapper) {
                 int width = options.has("width") ? options.getInteger("width") : 0;
                 String alignStr = options.getString("alignment", "left");
-                int alignment = 0;
+                int alignment;
                 switch (alignStr.toLowerCase()) {
                     case "center": alignment = 1; break;
                     case "right": alignment = 2; break;
                     default: alignment = 0; break;
                 }
                 ((PosPrinterWrapper) currentPrinter).printImageFromPath(imagePath, width, alignment, context);
+
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
                 int mode = options.has("mode") ? options.getInteger("mode") : 0;
                 ((CpclPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode, context);
+
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
                 String mode = options.getString("mode", "OVERWRITE");
                 ((TsplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode, context);
+
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -455,12 +468,16 @@ public class CapacitorXprinter {
                 int height = options.has("height") ? options.getInteger("height") : 200;
                 ((ZplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, width, height, context);
             }
+
+            // Phản hồi thành công
             JSObject ret = new JSObject();
             ret.put("code", 200);
             ret.put("msg", "In hình ảnh thành công");
             ret.put("data", null);
             call.resolve(ret);
+
         } catch (Exception ex) {
+            // Trả lỗi về JS
             JSObject ret = new JSObject();
             ret.put("code", 500);
             ret.put("msg", ex.getMessage());
