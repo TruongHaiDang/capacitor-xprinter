@@ -11,6 +11,9 @@ import java.io.InputStream;
 
 public class CpclPrinterWrapper implements PrinterBase {
     private final CPCLPrinter printer;
+    private int labelWidth = 576;   // mặc định, đơn vị dots
+    private int labelHeight = 320;  // mặc định, đơn vị dots
+    private int labelQuantity = 1;
 
     public CpclPrinterWrapper(IDeviceConnection connection) {
         this.printer = new CPCLPrinter(connection);
@@ -119,7 +122,40 @@ public class CpclPrinterWrapper implements PrinterBase {
      * @param quantity Số lượng
      */
     public void setLabel(int width, int height, int quantity) {
-        printer.initializePrinter(height, quantity);
+        this.labelWidth = width;
+        this.labelHeight = height;
+        this.labelQuantity = quantity;
+        printer.initializePrinter(0, height, quantity);
+    }
+
+    public int getLabelWidthOrDefault() { return labelWidth; }
+    public int getLabelHeightOrDefault() { return labelHeight; }
+    public int getLabelQuantityOrDefault() { return labelQuantity; }
+
+    /**
+     * In text CPCL: tự động initialize, addText, form, print, sendData
+     * Nếu x/y/font không truyền vào, tự căn giữa
+     */
+    public void printText(String text, Integer x, Integer y, String font) {
+        // 1. Khởi tạo label
+        printer.initializePrinter(0, labelHeight, labelQuantity);
+
+        // 2. Tính toán vị trí căn giữa nếu x/y null
+        int posX = (x != null) ? x : (labelWidth / 2 - (text.length() * 8)); // 8 là width ước lượng 1 ký tự
+        int posY = (y != null) ? y : (labelHeight / 2);
+
+        // 3. Chọn font mặc định nếu không truyền
+        String fontName = (font != null) ? font : "0";
+
+        // 4. Thêm text
+        printer.addText(posX, posY, fontName, text);
+
+        // 5. Kết thúc label
+        printer.addForm();
+        printer.addPrint();
+
+        // 6. Gửi lệnh xuống máy in (nếu cần flush)
+        printer.sendData(new byte[0]);
     }
 
     /**

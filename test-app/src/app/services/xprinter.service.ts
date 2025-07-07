@@ -106,10 +106,6 @@ export class XprinterService {
     return CapacitorXprinter.sendRawData(options);
   }
 
-  async printLabel(options: { command: string }) {
-    return CapacitorXprinter.printLabel(options);
-  }
-
   async resetPrinter() {
     return CapacitorXprinter.resetPrinter();
   }
@@ -152,5 +148,12 @@ export class XprinterService {
 
   async configLabel(options: Record<string, any>) {
     return CapacitorXprinter.configLabel(options);
+  }
+
+  /**
+   * Gửi lệnh gốc cho máy in (ZPL/CPCL/TSPL...)
+   */
+  async sendCommand(command: string): Promise<any> {
+    return CapacitorXprinter.printLabel({ command });
   }
 }

@@ -269,27 +269,40 @@ public class CapacitorXprinter {
                 int attribute = options.has("attribute") ? options.getInteger("attribute") : 0;
                 ((PosPrinterWrapper) currentPrinter).printText(text, alignment, textSize, attribute);
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                int font = options.has("font") ? options.getInteger("font") : 0;
-                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
-                ((CpclPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation);
+                // Nếu không có tham số vị trí/font -> dùng hàm tự động
+                if (!options.has("x") && !options.has("font") && !options.has("rotation")) {
+                    ((CpclPrinterWrapper) currentPrinter).printText(text, null, null, null);
+                } else {
+                    int x = options.has("x") ? options.getInteger("x") : 0;
+                    int y = options.has("y") ? options.getInteger("y") : 0;
+                    int font = options.has("font") ? options.getInteger("font") : 0;
+                    int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
+                    ((CpclPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation);
+                }
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                String font = options.getString("font", "0");
-                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
-                int xScale = options.has("xScale") ? options.getInteger("xScale") : 1;
-                int yScale = options.has("yScale") ? options.getInteger("yScale") : 1;
-                ((TsplPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation, xScale, yScale);
+                if (!options.has("x") && !options.has("font") && !options.has("rotation")) {
+                    ((TsplPrinterWrapper) currentPrinter).printText(text, null, null, null);
+                } else {
+                    int x = options.has("x") ? options.getInteger("x") : 0;
+                    int y = options.has("y") ? options.getInteger("y") : 0;
+                    String font = options.getString("font", "0");
+                    int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
+                    int xScale = options.has("xScale") ? options.getInteger("xScale") : 1;
+                    int yScale = options.has("yScale") ? options.getInteger("yScale") : 1;
+                    ((TsplPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation, xScale, yScale);
+                }
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                String font = options.getString("font", "A");
-                String orientation = options.getString("orientation", "N");
-                int height = options.has("height") ? options.getInteger("height") : 30;
-                int width = options.has("width") ? options.getInteger("width") : 30;
-                ((ZplPrinterWrapper) currentPrinter).printText(text, x, y, font, orientation, height, width);
+                if (!options.has("x") && !options.has("font")) {
+                    ((ZplPrinterWrapper) currentPrinter).printText(text, null, null, null, null, null, null);
+                } else {
+                    Integer x = options.has("x") ? options.getInteger("x") : null;
+                    Integer y = options.has("y") ? options.getInteger("y") : null;
+                    String font = options.has("font") ? options.getString("font") : null;
+                    String orientation = options.getString("orientation", "N");
+                    Integer height = options.has("height") ? options.getInteger("height") : null;
+                    Integer width = options.has("width") ? options.getInteger("width") : null;
+                    ((ZplPrinterWrapper) currentPrinter).printText(text, x, y, font, orientation, height, width);
+                }
             } else {
                 call.reject("Loại máy in không hỗ trợ in text", (Exception) null, null);
                 return;

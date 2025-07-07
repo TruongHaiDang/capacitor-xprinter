@@ -19,6 +19,10 @@ import {
   IonSegmentButton,
   IonLabel,
   IonIcon,
+  IonItem,
+  IonInput,
+  IonButton,
+  IonTextarea
 } from '@ionic/angular/standalone';
 import { XprinterService } from '../services/xprinter.service';
 import { addIcons } from 'ionicons';
@@ -63,10 +67,20 @@ import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera
     IonSegmentButton,
     IonLabel,
     IonIcon,
+    IonItem,
+    IonInput,
+    IonButton,
+    IonTextarea
   ],
 })
 export class PrintTestPage implements OnInit {
   selectedProtocol: string = 'POS';
+  labelConfig: { width: number; height: number; gap?: number; offset?: number; direction?: number; quantity?: number; length?: number; speed?: number } = { width: 60, height: 40, gap: 2 };
+  barcodeConfig: { height?: number; width?: number; codeType?: string; readable?: number; rotation?: number; narrow?: number; wide?: number } = { height: 40, width: 2 };
+  qrcodeConfig: { size?: number; model?: number; unitWidth?: number; ecLevel?: number } = { size: 6 };
+  imageConfig: { mode?: number; width?: number; height?: number } = { mode: 0 };
+  textConfig: { font?: number; size?: number; rotation?: number } = { font: 0, size: 0 };
+  customCommand: string = '';
 
   constructor(private xprinter: XprinterService) {
     addIcons({
@@ -236,27 +250,6 @@ export class PrintTestPage implements OnInit {
     }
   }
 
-  async onPrintLabel() {
-    let command = '';
-
-    if (this.selectedProtocol === 'CPCL') {
-      command = prompt('Nhập lệnh CPCL', '! 0 200 200 210 1\nTEXT 4 0 30 40 Hello CPCL\nPRINT\n') || '';
-    } else if (this.selectedProtocol === 'TSPL') {
-      command = prompt('Nhập lệnh TSPL', 'SIZE 40 mm, 30 mm\nGAP 3 mm, 0 mm\nDIRECTION 1\nCLS\nTEXT 100,100,"3",0,1,1,"Hello TSPL"\nPRINT 1,1\n') || '';
-    } else if (this.selectedProtocol === 'ZPL') {
-      command = prompt('Nhập lệnh ZPL', '^XA\n^FO50,50^A0N,50,50^FDHello ZPL^FS\n^XZ\n') || '';
-    }
-
-    if (!command) return;
-
-    try {
-      const res = await this.xprinter.printLabel({ command });
-      alert(res.msg || 'In label thành công');
-    } catch (err: any) {
-      alert(err?.msg || err?.message || 'Lỗi in label');
-    }
-  }
-
   async onGetPrinterStatus() {
     try {
       const res = await this.xprinter.getPrinterStatus();
@@ -338,6 +331,68 @@ export class PrintTestPage implements OnInit {
       alert(res.msg || 'In ảnh chụp (base64) thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi chụp/in ảnh');
+    }
+  }
+
+  /*
+   * Cấu hình thông số label cho CPCL / TSPL / ZPL
+   * Sau khi cấu hình thành công có thể gọi các hàm printText / printBarcode / ... để vẽ nội dung.
+   */
+  async onConfigLabel() {
+    try {
+      const res = await this.xprinter.configLabel(this.labelConfig);
+      alert(res.msg || 'Cấu hình label thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi cấu hình label');
+    }
+  }
+
+  async onConfigBarcode() {
+    try {
+      const res = await this.xprinter.configBarcode(this.barcodeConfig);
+      alert(res.msg || 'Cấu hình barcode thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi cấu hình barcode');
+    }
+  }
+
+  async onConfigQRCode() {
+    try {
+      const res = await this.xprinter.configQRCode(this.qrcodeConfig);
+      alert(res.msg || 'Cấu hình QRCode thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi cấu hình QRCode');
+    }
+  }
+
+  async onConfigImage() {
+    try {
+      const res = await this.xprinter.configImage(this.imageConfig);
+      alert(res.msg || 'Cấu hình image thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi cấu hình image');
+    }
+  }
+
+  async onConfigText() {
+    try {
+      const res = await this.xprinter.configText(this.textConfig);
+      alert(res.msg || 'Cấu hình text thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Lỗi cấu hình text');
+    }
+  }
+
+  async onSendCommand(): Promise<void> {
+    if (!this.customCommand?.trim()) {
+      alert('Vui lòng nhập lệnh máy in!');
+      return;
+    }
+    try {
+      const res = await this.xprinter.sendCommand(this.customCommand);
+      alert(res?.msg || 'Gửi lệnh thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Gửi lệnh thất bại!');
     }
   }
 }
