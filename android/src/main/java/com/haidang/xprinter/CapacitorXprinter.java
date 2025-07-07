@@ -437,7 +437,7 @@ public class CapacitorXprinter {
                     case "right": alignment = 2; break;
                     default: alignment = 0; break;
                 }
-                ((PosPrinterWrapper) currentPrinter).printImageFromPath(imagePath, width, alignment);
+                ((PosPrinterWrapper) currentPrinter).printImageFromPath(imagePath, width, alignment, context);
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
