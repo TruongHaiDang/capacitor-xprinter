@@ -1,5 +1,11 @@
 package com.haidang.xprinter;
 
+import android.util.Log;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Base64;
 import net.posprinter.IDeviceConnection;
 import net.posprinter.POSPrinter;
 import net.posprinter.posprinterface.IStatusCallback;
@@ -104,15 +110,91 @@ public class PosPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * In hình ảnh từ đường dẫn
-     * @param imagePath Đường dẫn hình ảnh
-     * @param width Độ rộng (0 = auto)
-     * @param alignment Căn lề
+     * In hình ảnh từ đường dẫn (hỗ trợ cả "file://", "content://" và data URI).
+     * Nếu SDK không tự giải mã được chuỗi đường dẫn (ví dụ có scheme hoặc là Content-Uri)
+     * thì chúng ta chủ động nạp Bitmap rồi truyền sang hàm printBitmap(Bitmap, ...).
+     *
+     * @param imagePath  Đường dẫn / uri / data-uri của hình ảnh
+     * @param width      Độ rộng mong muốn (0 = auto, đơn vị pixel của máy in)
+     * @param alignment  Căn lề (0-left, 1-center, 2-right)
+     * @param context    Context – dùng để lấy ContentResolver khi hình ảnh là content://
      */
-    public void printImageFromPath(String imagePath, int width, int alignment) {
-        printer.printBitmap(imagePath, alignment, width);
+    public void printImageFromPath(String imagePath, int width, int alignment, Context context) {
+        Bitmap bmp = loadBitmapFromPath(imagePath, context);
+        if (bmp == null) {
+            throw new RuntimeException("Không thể đọc hình ảnh từ đường dẫn: " + imagePath);
+        }
+
+        printer.printBitmap(bmp, alignment, width);
         printer.feedLine();
         printer.sendData(new byte[0]);
+    }
+
+    /**
+     * Chuyển một đường dẫn Uri / file path / data-uri thành Bitmap.
+     */
+    private Bitmap loadBitmapFromPath(String path, Context context) {
+        if (path == null) {
+            Log.e("XprinterPlugin", "loadBitmapFromPath: path=null");
+            return null;
+        }
+
+        try {
+            Log.e("XprinterPlugin", "loadBitmapFromPath: path=" + path);
+
+            // Trường hợp data URI:  data:image/png;base64,...
+            if (path.startsWith("data:image")) {
+                Log.e("XprinterPlugin", "→ Đây là base64 image");
+                String base64Part = path.substring(path.indexOf(',') + 1);
+                byte[] decoded = Base64.decode(base64Part, Base64.DEFAULT);
+                return BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            }
+
+            Uri uri = Uri.parse(path);
+            Log.e("XprinterPlugin", "→ URI scheme: " + uri.getScheme());
+
+            // Trường hợp content://
+            if ("content".equalsIgnoreCase(uri.getScheme())) {
+                Log.e("XprinterPlugin", "→ Đây là content:// URI");
+                try (java.io.InputStream is = context.getContentResolver().openInputStream(uri)) {
+                    if (is == null) {
+                        Log.e("XprinterPlugin", "→ InputStream từ ContentResolver null");
+                        return null;
+                    }
+                    return BitmapFactory.decodeStream(is);
+                }
+            }
+
+            // Trường hợp file:// hoặc path thuần
+            String realPath;
+            if ("file".equalsIgnoreCase(uri.getScheme())) {
+                realPath = uri.getPath();
+                Log.e("XprinterPlugin", "→ Đây là file:// path, realPath=" + realPath);
+            } else {
+                realPath = path;
+                Log.e("XprinterPlugin", "→ Đây là path thuần: " + realPath);
+            }
+
+            java.io.File f = new java.io.File(realPath);
+            if (!f.exists()) {
+                Log.e("XprinterPlugin", "⚠️ File KHÔNG tồn tại: " + realPath);
+            } else {
+                Log.e("XprinterPlugin", "✅ File tồn tại: " + realPath);
+            }
+
+            Bitmap bmp = BitmapFactory.decodeFile(realPath);
+            if (bmp == null) {
+                Log.e("XprinterPlugin", "⚠️ decodeFile trả về null");
+            } else {
+                Log.e("XprinterPlugin", "✅ decodeFile OK, size = " + bmp.getWidth() + "x" + bmp.getHeight());
+            }
+
+            return bmp;
+
+        } catch (Exception e) {
+            Log.e("XprinterPlugin", "❌ loadBitmapFromPath: exception=" + e.getMessage(), e);
+            return null;
+        }
     }
 
     /**
@@ -124,8 +206,8 @@ public class PosPrinterWrapper implements PrinterBase {
     public void printImageBase64(String base64, int width, int alignment) {
         // Chuyển base64 sang Bitmap rồi in
         try {
-            byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
-            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            byte[] decoded = Base64.decode(base64, Base64.DEFAULT);
+            Bitmap bmp = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
             printer.printBitmap(bmp, alignment, width);
             printer.feedLine();
             printer.sendData(new byte[0]);
