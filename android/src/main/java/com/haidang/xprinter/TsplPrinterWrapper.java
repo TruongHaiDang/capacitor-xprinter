@@ -11,11 +11,19 @@ import java.io.InputStream;
 
 public class TsplPrinterWrapper implements PrinterBase {
     private final TSPLPrinter printer;
-    private double labelWidthMm = 60.0;  // mặc định mm
-    private double labelHeightMm = 40.0; // mặc định mm
+    // Giá trị mặc định dựa trên selftest máy in
+    private double labelWidthMm = 72.0;  // mm
+    private double labelHeightMm = 30.0; // mm
+    private int printSpeed = 3;          // tốc độ in
+    private int printDensity = 7;        // độ đậm
+    private StringBuilder labelBuffer = new StringBuilder();
 
     public TsplPrinterWrapper(IDeviceConnection connection) {
         this.printer = new TSPLPrinter(connection);
+        // Thiết lập mặc định theo selftest
+        printer.sizeMm(labelWidthMm, labelHeightMm);
+        printer.speed(printSpeed);
+        printer.density(printDensity);
     }
 
     @Override
@@ -29,62 +37,50 @@ public class TsplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * In văn bản TSPL
-     * @param text Nội dung văn bản
-     * @param x Tọa độ X
-     * @param y Tọa độ Y
-     * @param font Font
-     * @param rotation Góc xoay (0, 90, 180, 270)
-     * @param xScale Tỷ lệ X
-     * @param yScale Tỷ lệ Y
+     * Xóa buffer (clear label, bắt buộc trước khi vẽ mới)
      */
-    public void printText(String text, int x, int y, String font, int rotation, int xScale, int yScale) {
+    public void clearBuffer() {
+        printer.cls();
+    }
+
+    /**
+     * Vẽ text lên buffer máy in (chưa in)
+     */
+    public void drawText(String text, int x, int y, String font, int rotation, int xScale, int yScale) {
         printer.text(x, y, font, rotation, xScale, yScale, text);
-        // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
     }
 
     /**
-     * In mã QR TSPL
-     * @param data Dữ liệu mã QR
-     * @param x Tọa độ X
-     * @param y Tọa độ Y
-     * @param ecLevel Mức độ sửa lỗi
-     * @param cellWidth Độ rộng cell
-     * @param mode Mode (A-Auto, M-Manual)
-     * @param rotation Góc xoay
-     * @param model Model (M1, M2)
+     * Vẽ barcode lên buffer máy in (chưa in) - luôn truyền đủ tham số chuẩn TSPL
      */
-    public void printQRCode(String data, int x, int y, String ecLevel, int cellWidth, String mode, int rotation, String model) {
-        printer.qrcode(x, y, ecLevel, cellWidth, mode, rotation, data);
-        // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
+    public void drawBarcode(String data, int x, int y, String codeType, int height, int readable, int rotation, int narrow, int wide) {
+        printer.cls();
+        String type = (codeType != null) ? codeType : "128";
+        int h = (height > 0) ? height : 80;
+        int r = (readable == 0 || readable == 1) ? readable : 1;
+        int rot = (rotation == 0 || rotation == 90 || rotation == 180 || rotation == 270) ? rotation : 0;
+        int n = (narrow > 0) ? narrow : 2;
+        int w = (wide > 0) ? wide : 2;
+        printer.barcode(x, y, type, h, r, rot, n, w, data);
+        printer.print(1);
     }
 
     /**
-     * In mã vạch TSPL
-     * @param data Dữ liệu mã vạch
-     * @param x Tọa độ X
-     * @param y Tọa độ Y
-     * @param codeType Loại mã vạch
-     * @param height Chiều cao
-     * @param readable Hiển thị text (0-không, 1-có)
-     * @param rotation Góc xoay
-     * @param narrow Độ rộng narrow
-     * @param wide Độ rộng wide
+     * Vẽ QRCode lên buffer máy in (chưa in) - luôn truyền model và mask cho chắc chắn
      */
-    public void printBarcode(String data, int x, int y, String codeType, int height, int readable, int rotation, int narrow, int wide) {
-        printer.barcode(x, y, codeType, height, readable, rotation, narrow, wide, data);
-        // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
+    public void drawQRCode(String data, int x, int y, String ecLevel, int cellWidth, String mode, int rotation, String model) {
+        printer.cls();
+        String qrModel = (model != null) ? model : "M2";
+        String mask = "0";
+        printer.qrcode(x, y, ecLevel, cellWidth, mode, rotation, qrModel, mask, data);
+        printer.print(1);
     }
 
     /**
-     * In hình ảnh TSPL từ đường dẫn hoặc URI
-     * @param imagePath Đường dẫn hình ảnh hoặc content URI
-     * @param x Tọa độ X
-     * @param y Tọa độ Y
-     * @param mode Mode in
-     * @param context Context Android để đọc URI
+     * Vẽ hình ảnh từ path lên buffer máy in (chưa in) - đảm bảo ảnh hợp lệ
      */
-    public void printImageFromPath(String imagePath, int x, int y, String mode, Context context) {
+    public void drawImageFromPath(String imagePath, int x, int y, int mode, Context context) {
+        printer.cls();
         Bitmap bmp = null;
         try {
             if (imagePath != null && imagePath.startsWith("content://")) {
@@ -96,30 +92,36 @@ public class TsplPrinterWrapper implements PrinterBase {
         } catch (Exception e) {
             bmp = null;
         }
-        if (bmp != null) {
-            printer.bitmap(x, y, 0, bmp.getWidth(), bmp);
-            // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
-        } else {
-            throw new RuntimeException("Không đọc được file hình ảnh: " + imagePath);
+        if (bmp != null && bmp.getWidth() > 0 && bmp.getHeight() > 0) {
+            printer.bitmap(x, y, mode, bmp.getWidth(), bmp);
         }
+        printer.print(1);
     }
 
     /**
-     * In hình ảnh TSPL từ base64
-     * @param base64 Chuỗi base64 của hình ảnh
-     * @param x Tọa độ X
-     * @param y Tọa độ Y
-     * @param mode Mode in
+     * Vẽ hình ảnh từ base64 lên buffer máy in (chưa in) - đảm bảo ảnh hợp lệ
      */
-    public void printImageBase64(String base64, int x, int y, String mode) {
+    public void drawImageBase64(String base64, int x, int y, int mode) {
+        printer.cls();
         try {
             byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
-            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
-            printer.bitmap(x, y, 0, bmp.getWidth(), bmp);
-            // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
+            Bitmap bmp = BitmapFactory.decodeByteArray(decoded, 0, decoded.length);
+            if (bmp != null && bmp.getWidth() > 0 && bmp.getHeight() > 0) {
+                printer.bitmap(x, y, mode, bmp.getWidth(), bmp);
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi giải mã base64 hình ảnh", e);
+            // Bỏ qua lỗi ảnh
         }
+        printer.print(1);
+    }
+
+    /**
+     * In label: gửi lệnh in xuống máy in
+     * @param sets Số bộ
+     * @param copies Số bản sao (không dùng với TSPL)
+     */
+    public void printLabel(int sets, int copies) {
+        printer.print(sets);
     }
 
     /**
@@ -154,23 +156,6 @@ public class TsplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * Clear buffer
-     */
-    public void clearBuffer() {
-        printer.cls();
-    }
-
-    /**
-     * In label
-     * @param sets Số bộ
-     * @param copies Số bản sao
-     */
-    public void printLabel(int sets, int copies) {
-        printer.print(sets);
-        // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
-    }
-
-    /**
      * Gửi lệnh TSPL tùy chỉnh
      * @param command Lệnh TSPL
      */
@@ -179,23 +164,18 @@ public class TsplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * In text TSPL: tự động cls, text, print(1), sendData.
+     * Hàm tiện lợi: In text TSPL (tự động clear, vẽ text, in 1 bản)
      * Nếu x/y/font null thì dùng mặc định & căn giữa sơ bộ.
      */
     public void printText(String text, Integer x, Integer y, String font) {
-        // Chuyển mm về dot (ước lượng, 1mm≈8dot ở 203dpi)
         int labelWidthDot  = (int) (labelWidthMm * 8);
         int labelHeightDot = (int) (labelHeightMm * 8);
-
         int posX = (x != null) ? x : Math.max(0, (labelWidthDot - text.length() * 8) / 2);
-        int posY = (y != null) ? y : 30; // 30dot ~ 4mm từ mép trên
-
+        int posY = (y != null) ? y : 30;
         String fontName = (font != null) ? font : "0";
-
-        printer.cls(); // clear buffer
+        printer.cls();
         printer.text(posX, posY, fontName, 0, 1, 1, text);
         printer.print(1);
-        // Không gọi sendData trực tiếp, chỉ dùng sendCommand nếu cần gửi lệnh thủ công
     }
 }
 

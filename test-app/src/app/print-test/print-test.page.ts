@@ -340,7 +340,8 @@ export class PrintTestPage implements OnInit {
    */
   async onConfigLabel() {
     try {
-      const res = await this.xprinter.configLabel(this.labelConfig);
+      // Không truyền width/height nếu muốn dùng mặc định của máy in (service sẽ tự gán)
+      const res = await this.xprinter.configLabel();
       alert(res.msg || 'Cấu hình label thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi cấu hình label');

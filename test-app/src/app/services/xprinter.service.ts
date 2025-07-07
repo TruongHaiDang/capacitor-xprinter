@@ -146,7 +146,15 @@ export class XprinterService {
     return CapacitorXprinter.configImage(options);
   }
 
-  async configLabel(options: Record<string, any>) {
+  /**
+   * Cấu hình label cho TSPL với giá trị mặc định từ selftest nếu không truyền vào
+   */
+  async configLabel(options: Record<string, any> = {}) {
+    // Gán mặc định nếu chưa có
+    if (options['width'] === undefined) options['width'] = 72;
+    if (options['height'] === undefined) options['height'] = 30;
+    if (options['speed'] === undefined) options['speed'] = 3;
+    if (options['density'] === undefined) options['density'] = 7;
     return CapacitorXprinter.configLabel(options);
   }
 
@@ -155,5 +163,50 @@ export class XprinterService {
    */
   async sendCommand(command: string): Promise<any> {
     return CapacitorXprinter.printLabel({ command });
+  }
+
+  /**
+   * Vẽ text lên buffer TSPL (chưa in)
+   */
+  async drawTextTSPL(options: { text: string; x: number; y: number; font: string; rotation: number; xScale: number; yScale: number }) {
+    return CapacitorXprinter.printText({ ...options });
+  }
+
+  /**
+   * Vẽ barcode lên buffer TSPL (chưa in)
+   */
+  async drawBarcodeTSPL(options: { data: string; x: number; y: number; codeType: string; height: number; readable: number; rotation: number; narrow: number; wide: number }) {
+    // Gọi plugin riêng cho TSPL, không dùng chung với POS/CPCL/ZPL
+    return (window as any).Capacitor.Plugins.CapacitorXprinter.drawBarcodeTSPL(options);
+  }
+
+  /**
+   * Vẽ QRCode lên buffer TSPL (chưa in)
+   */
+  async drawQRCodeTSPL(options: { data: string; x: number; y: number; ecLevel: string; cellWidth: number; mode: string; rotation: number; model?: string }) {
+    // Gọi plugin riêng cho TSPL, không dùng chung với POS/CPCL/ZPL
+    return (window as any).Capacitor.Plugins.CapacitorXprinter.drawQRCodeTSPL(options);
+  }
+
+  /**
+   * Vẽ hình ảnh từ path lên buffer TSPL (chưa in)
+   */
+  async drawImageFromPathTSPL(options: { imagePath: string; x: number; y: number; mode: number }) {
+    return CapacitorXprinter.printImageFromPath({ ...options });
+  }
+
+  /**
+   * Vẽ hình ảnh từ base64 lên buffer TSPL (chưa in)
+   */
+  async drawImageBase64TSPL(options: { base64: string; x: number; y: number; mode: number }) {
+    return CapacitorXprinter.printImageBase64({ ...options });
+  }
+
+  /**
+   * In label TSPL sau khi đã vẽ các thành phần
+   */
+  async printLabelTSPL(options: { sets?: number; copies?: number } = {}) {
+    // Gọi plugin riêng cho TSPL, không dùng chung với POS/CPCL/ZPL
+    return (window as any).Capacitor.Plugins.CapacitorXprinter.printLabelTSPL(options);
   }
 }

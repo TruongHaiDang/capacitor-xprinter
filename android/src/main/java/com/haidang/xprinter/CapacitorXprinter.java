@@ -289,7 +289,7 @@ public class CapacitorXprinter {
                     int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
                     int xScale = options.has("xScale") ? options.getInteger("xScale") : 1;
                     int yScale = options.has("yScale") ? options.getInteger("yScale") : 1;
-                    ((TsplPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation, xScale, yScale);
+                    ((TsplPrinterWrapper) currentPrinter).drawText(text, x, y, font, rotation, xScale, yScale);
                 }
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 if (!options.has("x") && !options.has("font")) {
@@ -359,7 +359,7 @@ public class CapacitorXprinter {
                 String mode = options.getString("mode", "A");
                 int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
                 String model = options.getString("model", "M2");
-                ((TsplPrinterWrapper) currentPrinter).printQRCode(data, x, y, ecLevel, cellWidth, mode, rotation, model);
+                ((TsplPrinterWrapper) currentPrinter).drawQRCode(data, x, y, ecLevel, cellWidth, mode, rotation, model);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -426,7 +426,7 @@ public class CapacitorXprinter {
                 int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
                 int narrow = options.has("narrow") ? options.getInteger("narrow") : 2;
                 int wide = options.has("wide") ? options.getInteger("wide") : 2;
-                ((TsplPrinterWrapper) currentPrinter).printBarcode(data, x, y, codeType, height, readable, rotation, narrow, wide);
+                ((TsplPrinterWrapper) currentPrinter).drawBarcode(data, x, y, codeType, height, readable, rotation, narrow, wide);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -494,8 +494,19 @@ public class CapacitorXprinter {
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
-                String mode = options.getString("mode", "OVERWRITE");
-                ((TsplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode, context);
+                int mode = 0;
+                if (options.has("mode")) {
+                    Object m = options.get("mode");
+                    if (m instanceof Number) {
+                        mode = ((Number) m).intValue();
+                    } else if (m instanceof String) {
+                        String ms = (String) m;
+                        if (ms.equalsIgnoreCase("OR")) mode = 1;
+                        else if (ms.equalsIgnoreCase("XOR")) mode = 2;
+                        else mode = 0;
+                    }
+                }
+                ((TsplPrinterWrapper) currentPrinter).drawImageFromPath(imagePath, x, y, mode, context);
 
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
@@ -553,8 +564,19 @@ public class CapacitorXprinter {
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
-                String mode = options.getString("mode", "OVERWRITE");
-                ((TsplPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, mode);
+                int mode = 0;
+                if (options.has("mode")) {
+                    Object m = options.get("mode");
+                    if (m instanceof Number) {
+                        mode = ((Number) m).intValue();
+                    } else if (m instanceof String) {
+                        String ms = (String) m;
+                        if (ms.equalsIgnoreCase("OR")) mode = 1;
+                        else if (ms.equalsIgnoreCase("XOR")) mode = 2;
+                        else mode = 0;
+                    }
+                }
+                ((TsplPrinterWrapper) currentPrinter).drawImageBase64(base64, x, y, mode);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
