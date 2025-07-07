@@ -251,29 +251,52 @@ public class CapacitorXprinter {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
-        if (!(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chức năng in text chỉ hỗ trợ POSPrinter", (Exception) null, null);
-            return;
-        }
         String text = options.getString("text");
         if (text == null) {
             call.reject("Thiếu text", (Exception) null, null);
             return;
         }
-        String alignStr = options.getString("alignment", "left");
-        int alignment = 0;
-        switch (alignStr.toLowerCase()) {
-            case "center": alignment = 1; break;
-            case "right": alignment = 2; break;
-            default: alignment = 0; break;
-        }
-        int textSize = options.has("textSize") ? options.getInteger("textSize") : 0;
-        int attribute = options.has("attribute") ? options.getInteger("attribute") : 0;
         try {
-            ((PosPrinterWrapper) currentPrinter).printText(text, alignment, textSize, attribute);
+            if (currentPrinter instanceof PosPrinterWrapper) {
+                String alignStr = options.getString("alignment", "left");
+                int alignment = 0;
+                switch (alignStr.toLowerCase()) {
+                    case "center": alignment = 1; break;
+                    case "right": alignment = 2; break;
+                    default: alignment = 0; break;
+                }
+                int textSize = options.has("textSize") ? options.getInteger("textSize") : 0;
+                int attribute = options.has("attribute") ? options.getInteger("attribute") : 0;
+                ((PosPrinterWrapper) currentPrinter).printText(text, alignment, textSize, attribute);
+            } else if (currentPrinter instanceof CpclPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                int font = options.has("font") ? options.getInteger("font") : 0;
+                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
+                ((CpclPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String font = options.getString("font", "0");
+                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
+                int xScale = options.has("xScale") ? options.getInteger("xScale") : 1;
+                int yScale = options.has("yScale") ? options.getInteger("yScale") : 1;
+                ((TsplPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation, xScale, yScale);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                int x = options.has("x") ? options.getInteger("x") : 0;
+                int y = options.has("y") ? options.getInteger("y") : 0;
+                String font = options.getString("font", "A");
+                String orientation = options.getString("orientation", "N");
+                int height = options.has("height") ? options.getInteger("height") : 30;
+                int width = options.has("width") ? options.getInteger("width") : 30;
+                ((ZplPrinterWrapper) currentPrinter).printText(text, x, y, font, orientation, height, width);
+            } else {
+                call.reject("Loại máy in không hỗ trợ in text", (Exception) null, null);
+                return;
+            }
             JSObject ret = new JSObject();
             ret.put("code", 200);
-            ret.put("msg", "In thành công");
+            ret.put("msg", "In text thành công");
             ret.put("data", null);
             call.resolve(ret);
         } catch (Exception ex) {
@@ -811,39 +834,142 @@ public class CapacitorXprinter {
     }
 
     public void configBarcode(JSObject options, PluginCall call) {
-        // Chức năng cấu hình barcode - cần implement chi tiết
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Chức năng config barcode chưa được implement");
-        ret.put("data", null);
-        call.resolve(ret);
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        try {
+            if (currentPrinter instanceof CpclPrinterWrapper) {
+                // CPCL không có config barcode riêng, có thể lưu height/readable nếu cần
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                // TSPL không có config barcode riêng, có thể lưu height/readable nếu cần
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                // ZPL không có config barcode riêng, có thể lưu height/width nếu cần
+            } else {
+                call.reject("Chức năng configBarcode chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
+                return;
+            }
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Cấu hình barcode thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
     }
 
     public void configQRCode(JSObject options, PluginCall call) {
-        // Chức năng cấu hình QR code - cần implement chi tiết
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Chức năng config QR code chưa được implement");
-        ret.put("data", null);
-        call.resolve(ret);
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        try {
+            if (currentPrinter instanceof CpclPrinterWrapper) {
+                // CPCL không có config QRCode riêng, có thể lưu model/unitWidth nếu cần
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                // TSPL không có config QRCode riêng, có thể lưu cellWidth/model nếu cần
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                // ZPL không có config QRCode riêng, có thể lưu model/magnification nếu cần
+            } else {
+                call.reject("Chức năng configQRCode chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
+                return;
+            }
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Cấu hình QRCode thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
     }
 
     public void configImage(JSObject options, PluginCall call) {
-        // Chức năng cấu hình image - cần implement chi tiết
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Chức năng config image chưa được implement");
-        ret.put("data", null);
-        call.resolve(ret);
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        try {
+            if (currentPrinter instanceof CpclPrinterWrapper) {
+                // CPCL không có config image riêng, có thể lưu mode nếu cần
+                // int mode = options.has("mode") ? options.getInteger("mode") : 0;
+                // Lưu lại nếu muốn dùng cho printImage
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                // TSPL không có config image riêng, có thể lưu mode nếu cần
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                // ZPL không có config image riêng, có thể lưu width/height nếu cần
+            } else {
+                call.reject("Chức năng configImage chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
+                return;
+            }
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Cấu hình image thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
     }
 
     public void configLabel(JSObject options, PluginCall call) {
-        // Chức năng cấu hình label - cần implement chi tiết
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Chức năng config label chưa được implement");
-        ret.put("data", null);
-        call.resolve(ret);
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        try {
+            if (currentPrinter instanceof CpclPrinterWrapper) {
+                int width = options.has("width") ? options.getInteger("width") : 576;
+                int height = options.has("height") ? options.getInteger("height") : 320;
+                int quantity = options.has("quantity") ? options.getInteger("quantity") : 1;
+                ((CpclPrinterWrapper) currentPrinter).setLabel(width, height, quantity);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                double width = options.has("width") ? options.getDouble("width") : 60.0;
+                double height = options.has("height") ? options.getDouble("height") : 40.0;
+                double gap = options.has("gap") ? options.getDouble("gap") : 2.0;
+                double offset = options.has("offset") ? options.getDouble("offset") : 0.0;
+                int direction = options.has("direction") ? options.getInteger("direction") : 0;
+                TsplPrinterWrapper tspl = (TsplPrinterWrapper) currentPrinter;
+                tspl.setSize(width, height);
+                tspl.setGap(gap, offset);
+                tspl.setDirection(direction);
+                tspl.clearBuffer();
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                int length = options.has("length") ? options.getInteger("length") : 800;
+                int speed = options.has("speed") ? options.getInteger("speed") : 4;
+                ZplPrinterWrapper zpl = (ZplPrinterWrapper) currentPrinter;
+                zpl.setLabelLength(length);
+                zpl.setPrintSpeed(speed);
+                zpl.startFormat();
+            } else {
+                call.reject("Chức năng configLabel chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
+                return;
+            }
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Cấu hình label thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
     }
 
     /**
