@@ -359,7 +359,7 @@ public class CapacitorXprinter {
                 String mode = options.getString("mode", "A");
                 int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
                 String model = options.getString("model", "M2");
-                ((TsplPrinterWrapper) currentPrinter).drawQRCode(data, x, y, ecLevel, cellWidth, mode, rotation, model);
+                ((TsplPrinterWrapper) currentPrinter).drawQRCode(data, x, y, ecLevel, cellWidth, mode, rotation);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;

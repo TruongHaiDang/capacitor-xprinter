@@ -66,13 +66,24 @@ public class TsplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * Vẽ QRCode lên buffer máy in (chưa in) - luôn truyền model và mask cho chắc chắn
+     * Vẽ QRCode lên buffer máy in (chưa in) - đảm bảo thiết lập đầy đủ trước khi in
      */
-    public void drawQRCode(String data, int x, int y, String ecLevel, int cellWidth, String mode, int rotation, String model) {
+    public void drawQRCode(String data,
+                        int x, int y,
+                        String ecLevel,    // L | M | Q | H
+                        int cellWidth,     // 1–10
+                        String mode,       // A | M
+                        int rotation) {    // 0 | 90 | 180 | 270
+
+        /* 1. Bảo đảm khổ giấy & gap (gửi mỗi lần để không phụ thuộc trạng thái cũ) */
+        printer.sizeMm(labelWidthMm, labelHeightMm);
+        printer.gapMm(2.0, 0.0);
+        printer.speed(printSpeed);
+        printer.density(printDensity);
+
+        /* 2. Xoá buffer và gửi đúng cú pháp 7 tham số */
         printer.cls();
-        String qrModel = (model != null) ? model : "M2";
-        String mask = "0";
-        printer.qrcode(x, y, ecLevel, cellWidth, mode, rotation, qrModel, mask, data);
+        printer.qrcode(x, y, ecLevel, cellWidth, mode, rotation, data);  // <-- 7 tham số
         printer.print(1);
     }
 
