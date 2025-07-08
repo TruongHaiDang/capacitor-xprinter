@@ -11,6 +11,8 @@ import java.io.InputStream;
 
 public class ZplPrinterWrapper implements PrinterBase {
     private final ZPLPrinter printer;
+    private int labelLength = 800; // default, đơn vị dots
+    private int labelWidth = 600;  // default, đơn vị dots
 
     public ZplPrinterWrapper(IDeviceConnection connection) {
         this.printer = new ZPLPrinter(connection);
@@ -36,10 +38,31 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param height Chiều cao font
      * @param width Độ rộng font
      */
-    public void printText(String text, int x, int y, String font, String orientation, int height, int width) {
-        char fontChar = font != null && font.length() > 0 ? font.charAt(0) : 'A';
-        printer.addText(x, y, fontChar, orientation, width, height, text);
-        printer.sendData(new byte[0]);
+    public void printText(String text, Integer x, Integer y, String font, String orientation, Integer height, Integer width) {
+        // Giá trị mặc định
+        String fontVal = (font != null && !font.isEmpty()) ? font : "A";
+        String orientVal = (orientation != null && !orientation.isEmpty()) ? orientation : "N";
+        int fontHeight = (height != null) ? height : 30;
+        int fontWidth = (width != null) ? width : 30;
+        int labelW = getLabelWidthOrDefault();
+        int labelH = getLabelLengthOrDefault();
+        // Ước lượng chiều rộng text (rất đơn giản, có thể tinh chỉnh)
+        int textPixelWidth = text.length() * fontWidth;
+        int xVal = (x != null) ? x : Math.max(0, (labelW - textPixelWidth) / 2);
+        int yVal = (y != null) ? y : Math.max(0, (labelH - fontHeight) / 2);
+
+        // Xây chuỗi lệnh ZPL thủ công và gửi bằng sendData
+        StringBuilder zpl = new StringBuilder();
+        zpl.append("^XA\r\n");
+        // Tọa độ
+        zpl.append("^FO").append(xVal).append(',').append(yVal).append("\r\n");
+        // Font và kích thước
+        zpl.append("^A").append(fontVal).append(',').append(orientVal).append(',')
+           .append(fontHeight).append(',').append(fontWidth).append("\r\n");
+        // Nội dung
+        zpl.append("^FD").append(text).append("^FS\r\n");
+        zpl.append("^XZ");
+        sendCommand(zpl.toString());
     }
 
     /**
@@ -142,6 +165,7 @@ public class ZplPrinterWrapper implements PrinterBase {
      * @param length Độ dài (dots)
      */
     public void setLabelLength(int length) {
+        this.labelLength = length;
         printer.setLabelLength(length);
     }
 
@@ -160,5 +184,13 @@ public class ZplPrinterWrapper implements PrinterBase {
     public void sendCommand(String command) {
         printer.sendData(command.getBytes());
     }
+
+    public void setLabelWidth(int width) {
+        this.labelWidth = width;
+        printer.setPrinterWidth(width);
+    }
+
+    public int getLabelLengthOrDefault() { return labelLength; }
+    public int getLabelWidthOrDefault() { return labelWidth; }
 }
 
