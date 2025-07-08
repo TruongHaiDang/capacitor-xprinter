@@ -14,6 +14,11 @@ export interface CapacitorXprinterPlugin {
   disconnect(): Promise<HandshakeResponse>;
 
   /**
+   * Kiểm tra trạng thái kết nối máy in (đã kết nối hay chưa)
+   */
+  isConnected(): Promise<{ connected: boolean }>;
+
+  /**
    * Danh sách cổng khả dụng (USB/Bluetooth/Serial)
    */
   listAvailablePorts(options: { type: 'USB' | 'BLUETOOTH' | 'SERIAL' }): Promise<{ ports: string[] }>;

@@ -23,6 +23,7 @@ public class CapacitorXprinter {
      */
     private PrinterBase currentPrinter = null;
     
+    // ===== HANDSHAKE =====
     public String echo(String value) {
         Log.i("Echo", value);
         return value;
@@ -150,119 +151,155 @@ public class CapacitorXprinter {
         }
     }
 
-    /**
-     * Lấy danh sách cổng/thiết bị khả dụng tuỳ theo type.
-     * Hỗ trợ USB, BLUETOOTH, SERIAL. Nếu type không hợp lệ trả về danh sách rỗng.
-     *
-     * @param type    Chuỗi 'USB' | 'BLUETOOTH' | 'SERIAL'
-     * @param context Context ứng dụng để truy cập hệ thống (cần cho USB)
-     * @return        Danh sách tên cổng/thiết bị
-     */
-    public List<String> listAvailablePorts(String type, Context context) {
-        ensureInit(context);
-        if (type == null) return Collections.emptyList();
-
-        switch (type.toUpperCase()) {
-            case "USB":
-                return POSConnect.getUsbDevices(context);
-            case "SERIAL":
-                return POSConnect.getSerialPort();
-            case "BLUETOOTH":
-                BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-                if (adapter == null) return Collections.emptyList();
-                Set<BluetoothDevice> bonded = adapter.getBondedDevices();
-                List<String> btDevices = new java.util.ArrayList<>();
-                for (BluetoothDevice dev : bonded) {
-                    btDevices.add(dev.getName());
-                }
-                return btDevices;
-            default:
-                return Collections.emptyList();
+    public HandshakeResponse isConnected() {
+        boolean connected = currentDevice != null && currentPrinter != null;
+        if (connected) {
+            return new HandshakeResponse(200, "Đã kết nối", true);
+        } else {
+            return new HandshakeResponse(400, "Chưa kết nối", false);
         }
     }
 
+    // ===== PRINT =====
     /**
-     * Lấy danh sách cổng Serial (COM).
-     * @return Danh sách tên cổng Serial
+     * In văn bản ra máy in theo loại máy in hiện tại.
+     *
+     * @param options Đối tượng JSObject chứa các tham số in text. Cấu trúc:
+     *   - POSPrinter:
+     *       {
+     *         text: string,                // Nội dung cần in (bắt buộc)
+     *         alignment?: 'left'|'center'|'right', // Căn lề (mặc định: 'left')
+     *         textSize?: number,           // Kích thước chữ (tùy máy, mặc định: 0)
+     *         attribute?: number           // Thuộc tính in (in đậm, nghiêng, v.v, mặc định: 0)
+     *       }
+     *   - CPCL:
+     *       {
+     *         text: string,                // Nội dung cần in (bắt buộc)
+     *         x?: number,                  // Tọa độ X (mặc định: 0)
+     *         y?: number,                  // Tọa độ Y (mặc định: 0)
+     *         font?: number,               // Loại font (mặc định: 0)
+     *         rotation?: number            // Góc xoay (mặc định: 0)
+     *       }
+     *   - TSPL:
+     *       {
+     *         text: string,                // Nội dung cần in (bắt buộc)
+     *         x?: number,                  // Tọa độ X (mặc định: 0)
+     *         y?: number,                  // Tọa độ Y (mặc định: 0)
+     *         font?: string,               // Loại font (mặc định: '0')
+     *         rotation?: number,           // Góc xoay (mặc định: 0)
+     *         xScale?: number,             // Tỉ lệ X (mặc định: 1)
+     *         yScale?: number              // Tỉ lệ Y (mặc định: 1)
+     *       }
+     *   - ZPL:
+     *       {
+     *         text: string,                // Nội dung cần in (bắt buộc)
+     *         x?: number,                  // Tọa độ X (mặc định: null)
+     *         y?: number,                  // Tọa độ Y (mặc định: null)
+     *         font?: string,               // Loại font (mặc định: null)
+     *         orientation?: string,        // Hướng in (mặc định: 'N')
+     *         height?: number,             // Chiều cao font (mặc định: null)
+     *         width?: number               // Chiều rộng font (mặc định: null)
+     *       }
+     *
+     * @param call Đối tượng PluginCall để trả về kết quả cho phía JS/TS
      */
-    public List<String> listSerialPorts(Context context) {
-        ensureInit(context);
-        return POSConnect.getSerialPort();
-    }
-
     public void printText(JSObject options, PluginCall call) {
+        // Kiểm tra đã kết nối máy in chưa
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
+        // Lấy nội dung text cần in
         String text = options.getString("text");
         if (text == null) {
             call.reject("Thiếu text", (Exception) null, null);
             return;
         }
         try {
+            // Xử lý cho POSPrinter (máy in hóa đơn)
             if (currentPrinter instanceof PosPrinterWrapper) {
-                String alignStr = options.getString("alignment", "left");
-                int alignment = 0;
+                // Lấy căn lề, kích thước, thuộc tính từ options hoặc configPosText
+                String alignStr = options.has("alignment") ? options.getString("alignment") : posTextAlignment;
+                int alignment = 0; // 0: left, 1: center, 2: right
                 switch (alignStr.toLowerCase()) {
                     case "center": alignment = 1; break;
                     case "right": alignment = 2; break;
                     default: alignment = 0; break;
                 }
-                int textSize = options.has("textSize") ? options.getInteger("textSize") : 0;
-                int attribute = options.has("attribute") ? options.getInteger("attribute") : 0;
+                int textSize = options.has("textSize") ? options.getInteger("textSize") : posTextSize;
+                int attribute = options.has("attribute") ? options.getInteger("attribute") : posTextAttribute;
                 ((PosPrinterWrapper) currentPrinter).printText(text, alignment, textSize, attribute);
+            // Xử lý cho CPCL Printer (máy in nhãn CPCL)
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
-                // Nếu không có tham số vị trí/font -> dùng hàm tự động
+                // Nếu không có tham số vị trí/font/rotation thì dùng hàm tự động (in ở vị trí mặc định)
                 if (!options.has("x") && !options.has("font") && !options.has("rotation")) {
                     ((CpclPrinterWrapper) currentPrinter).printText(text, null, null, null);
                 } else {
+                    // Lấy các tham số vị trí, font, rotation nếu có
                     int x = options.has("x") ? options.getInteger("x") : 0;
                     int y = options.has("y") ? options.getInteger("y") : 0;
                     int font = options.has("font") ? options.getInteger("font") : 0;
                     int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
                     ((CpclPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation);
                 }
+            // Xử lý cho TSPL Printer (máy in nhãn TSPL)
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                // Nếu không có tham số vị trí/font/rotation thì dùng hàm tự động
                 if (!options.has("x") && !options.has("font") && !options.has("rotation")) {
                     ((TsplPrinterWrapper) currentPrinter).printText(text, null, null, null);
                 } else {
+                    // Lấy các tham số vị trí, font, rotation, tỉ lệ X/Y nếu có
                     int x = options.has("x") ? options.getInteger("x") : 0;
                     int y = options.has("y") ? options.getInteger("y") : 0;
-                    String font = options.getString("font", "0");
+                    String font = options.getString("font", "0"); // font TSPL là string
                     int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
                     int xScale = options.has("xScale") ? options.getInteger("xScale") : 1;
                     int yScale = options.has("yScale") ? options.getInteger("yScale") : 1;
                     ((TsplPrinterWrapper) currentPrinter).drawText(text, x, y, font, rotation, xScale, yScale);
                 }
+            // Xử lý cho ZPL Printer (máy in nhãn ZPL)
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                // Nếu không có x/font thì dùng hàm tự động (in ở vị trí mặc định)
                 if (!options.has("x") && !options.has("font")) {
                     ((ZplPrinterWrapper) currentPrinter).printText(text, null, null, null, null, null, null);
                 } else {
+                    // Lấy các tham số vị trí, font, orientation, height, width nếu có
                     Integer x = options.has("x") ? options.getInteger("x") : null;
                     Integer y = options.has("y") ? options.getInteger("y") : null;
                     String font = options.has("font") ? options.getString("font") : null;
-                    String orientation = options.getString("orientation", "N");
+                    String orientation = options.getString("orientation", "N"); // N: Normal
                     Integer height = options.has("height") ? options.getInteger("height") : null;
                     Integer width = options.has("width") ? options.getInteger("width") : null;
                     ((ZplPrinterWrapper) currentPrinter).printText(text, x, y, font, orientation, height, width);
                 }
             } else {
+                // Nếu loại máy in không hỗ trợ in text
                 call.reject("Loại máy in không hỗ trợ in text", (Exception) null, null);
                 return;
             }
+            // Trả về kết quả thành công cho phía JS/TS
             JSObject ret = new JSObject();
             ret.put("code", 200);
             ret.put("msg", "In text thành công");
             ret.put("data", null);
             call.resolve(ret);
         } catch (Exception ex) {
+            // Xử lý lỗi khi in
             JSObject ret = new JSObject();
             ret.put("code", 500);
             ret.put("msg", ex.getMessage());
             ret.put("data", null);
             call.reject(ex.getMessage(), ex, ret);
         }
+    }
+
+    public void printEncodedText(JSObject options, PluginCall call) {
+        // Chức năng in text với encoding - cần implement chi tiết
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Chức năng in text với encoding chưa được implement");
+        ret.put("data", null);
+        call.resolve(ret);
     }
 
     public void printQRCode(JSObject options, PluginCall call) {
@@ -543,6 +580,45 @@ public class CapacitorXprinter {
         }
     }
 
+    public void printLabel(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String command = options.getString("command");
+        if (command == null) {
+            call.reject("Thiếu lệnh command", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            if (currentPrinter instanceof CpclPrinterWrapper) {
+                ((CpclPrinterWrapper) currentPrinter).sendCommand(command);
+            } else if (currentPrinter instanceof TsplPrinterWrapper) {
+                ((TsplPrinterWrapper) currentPrinter).sendCommand(command);
+            } else if (currentPrinter instanceof ZplPrinterWrapper) {
+                ((ZplPrinterWrapper) currentPrinter).sendCommand(command);
+            } else {
+                call.reject("Chức năng in label không hỗ trợ cho POSPrinter", (Exception) null, null);
+                return;
+            }
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "In label thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    // ===== PRINTER CONTROL =====
     public void cutPaper(PluginCall call) {
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
@@ -598,6 +674,87 @@ public class CapacitorXprinter {
         }
     }
 
+    public void resetPrinter(PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng reset chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            ((PosPrinterWrapper) currentPrinter).resetPrinter();
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Reset máy in thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void selfTest(PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng self test chỉ hỗ trợ POSPrinter", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            // Không hỗ trợ selfTest cho POSPrinter
+            JSObject ret = new JSObject();
+            ret.put("code", 501);
+            ret.put("msg", "Chức năng self test chưa được hỗ trợ cho POSPrinter");
+            ret.put("data", null);
+            call.reject("Chức năng self test chưa được hỗ trợ cho POSPrinter", (Exception) null, ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    public void setProtocol(JSObject options, PluginCall call) {
+        if (currentDevice == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        
+        String protocol = options.getString("protocol");
+        if (protocol == null) {
+            call.reject("Thiếu thông tin protocol", (Exception) null, null);
+            return;
+        }
+        
+        try {
+            currentPrinter = PrinterFactory.createPrinter(protocol, currentDevice);
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Thiết lập protocol thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
+    // ===== STATUS & DATA =====
     public void getPrinterStatus(PluginCall call) {
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
@@ -663,105 +820,6 @@ public class CapacitorXprinter {
         }
     }
 
-    public void printLabel(JSObject options, PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        
-        String command = options.getString("command");
-        if (command == null) {
-            call.reject("Thiếu lệnh command", (Exception) null, null);
-            return;
-        }
-        
-        try {
-            if (currentPrinter instanceof CpclPrinterWrapper) {
-                ((CpclPrinterWrapper) currentPrinter).sendCommand(command);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                ((TsplPrinterWrapper) currentPrinter).sendCommand(command);
-            } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                ((ZplPrinterWrapper) currentPrinter).sendCommand(command);
-            } else {
-                call.reject("Chức năng in label không hỗ trợ cho POSPrinter", (Exception) null, null);
-                return;
-            }
-            
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "In label thành công");
-            ret.put("data", null);
-            call.resolve(ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
-    public void resetPrinter(PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        if (!(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chức năng reset chỉ hỗ trợ POSPrinter", (Exception) null, null);
-            return;
-        }
-        
-        try {
-            ((PosPrinterWrapper) currentPrinter).resetPrinter();
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "Reset máy in thành công");
-            ret.put("data", null);
-            call.resolve(ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
-    public void selfTest(PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        if (!(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chức năng self test chỉ hỗ trợ POSPrinter", (Exception) null, null);
-            return;
-        }
-        
-        try {
-            // Không hỗ trợ selfTest cho POSPrinter
-            JSObject ret = new JSObject();
-            ret.put("code", 501);
-            ret.put("msg", "Chức năng self test chưa được hỗ trợ cho POSPrinter");
-            ret.put("data", null);
-            call.reject("Chức năng self test chưa được hỗ trợ cho POSPrinter", (Exception) null, ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
-    public void printEncodedText(JSObject options, PluginCall call) {
-        // Chức năng in text với encoding - cần implement chi tiết
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Chức năng in text với encoding chưa được implement");
-        ret.put("data", null);
-        call.resolve(ret);
-    }
-
     public void sendBatchCommands(JSObject options, PluginCall call) {
         // Chức năng gửi nhiều lệnh liên tiếp - cần implement chi tiết
         JSObject ret = new JSObject();
@@ -771,27 +829,96 @@ public class CapacitorXprinter {
         call.resolve(ret);
     }
 
-    public boolean isConnected() {
-        return currentDevice != null && currentPrinter != null;
-    }
+    // ===== CONFIG =====
+    /**
+     * Cấu hình các tham số in text cho POSPrinter.
+     *
+     * @param options Đối tượng JSObject chứa các tham số cấu hình. Cấu trúc:
+     *   {
+     *     alignment?: 'left'|'center'|'right', // Căn lề mặc định cho in text
+     *     attribute?: number,                  // Thuộc tính in (in đậm, gạch chân, đảo ngược, ...)
+     *     textSize?: number,                   // Kích thước chữ mặc định
+     *     font?: number,                       // Loại font (standard/compress)
+     *     lineSpacing?: number,                // Giãn dòng
+     *     codePage?: number,                   // Bảng mã ký tự
+     *     charRightSpace?: number,             // Khoảng cách ký tự
+     *     upsideDown?: boolean                 // In ngược
+     *   }
+     *
+     * Khi gọi hàm này, các giá trị sẽ được lưu lại và sử dụng làm mặc định cho các lần in text tiếp theo (nếu không truyền options tương ứng khi in).
+     *
+     * @param call Đối tượng PluginCall để trả về kết quả cho phía JS/TS
+     */
+    // Biến instance lưu config POS
+    private String posTextAlignment = "left";
+    private int posTextAttribute = 0;
+    private int posTextSize = 0;
+    private Integer posTextFont = null;
+    private Integer posTextLineSpacing = null;
+    private Integer posTextCodePage = null;
+    private Integer posTextCharRightSpace = null;
+    private Boolean posTextUpsideDown = null;
 
-    public void setProtocol(JSObject options, PluginCall call) {
-        if (currentDevice == null) {
+    public void configPosText(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
-        
-        String protocol = options.getString("protocol");
-        if (protocol == null) {
-            call.reject("Thiếu thông tin protocol", (Exception) null, null);
+        if (!(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("Chức năng configPosText chỉ hỗ trợ POSPrinter", (Exception) null, null);
             return;
         }
-        
         try {
-            currentPrinter = PrinterFactory.createPrinter(protocol, currentDevice);
+            PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
+            // Alignment
+            if (options.has("alignment")) {
+                posTextAlignment = options.getString("alignment", "left");
+                int alignment = 0;
+                switch (posTextAlignment.toLowerCase()) {
+                    case "center": alignment = net.posprinter.POSConst.ALIGNMENT_CENTER; break;
+                    case "right": alignment = net.posprinter.POSConst.ALIGNMENT_RIGHT; break;
+                    default: alignment = net.posprinter.POSConst.ALIGNMENT_LEFT; break;
+                }
+                pos.setAlignment(alignment);
+            }
+            // Attribute (bold, underline, reverse...)
+            if (options.has("attribute")) {
+                posTextAttribute = options.getInteger("attribute");
+            }
+            if (options.has("textSize")) {
+                posTextSize = options.getInteger("textSize");
+            }
+            if (options.has("attribute") || options.has("textSize")) {
+                pos.setTextStyle(posTextAttribute, posTextSize);
+            }
+            // Font (standard/compress)
+            if (options.has("font")) {
+                posTextFont = options.getInteger("font");
+                pos.selectCharacterFont(posTextFont);
+            }
+            // Line spacing
+            if (options.has("lineSpacing")) {
+                posTextLineSpacing = options.getInteger("lineSpacing");
+                pos.setLineSpacing(posTextLineSpacing);
+            }
+            // Code page
+            if (options.has("codePage")) {
+                posTextCodePage = options.getInteger("codePage");
+                pos.selectCodePage(posTextCodePage);
+            }
+            // Char right space
+            if (options.has("charRightSpace")) {
+                posTextCharRightSpace = options.getInteger("charRightSpace");
+                pos.setCharRightSpace(posTextCharRightSpace.byteValue());
+            }
+            // Upside down
+            if (options.has("upsideDown")) {
+                posTextUpsideDown = options.getBool("upsideDown");
+                pos.setTurnUpsideDownMode(posTextUpsideDown);
+            }
             JSObject ret = new JSObject();
             ret.put("code", 200);
-            ret.put("msg", "Thiết lập protocol thành công");
+            ret.put("msg", "Cấu hình text thành công");
             ret.put("data", null);
             call.resolve(ret);
         } catch (Exception ex) {
@@ -803,11 +930,26 @@ public class CapacitorXprinter {
         }
     }
 
-    public void configText(JSObject options, PluginCall call) {
-        // Chức năng cấu hình text - cần implement chi tiết
+    public void configCpclText(JSObject options, PluginCall call) {
         JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Chức năng config text chưa được implement");
+        ret.put("code", 501);
+        ret.put("msg", "Chức năng configCpclText chưa được hỗ trợ");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configTsplText(JSObject options, PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("code", 501);
+        ret.put("msg", "Chức năng configTsplText chưa được hỗ trợ");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configZplText(JSObject options, PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("code", 501);
+        ret.put("msg", "Chức năng configZplText chưa được hỗ trợ");
         ret.put("data", null);
         call.resolve(ret);
     }
@@ -951,6 +1093,7 @@ public class CapacitorXprinter {
         }
     }
 
+    // ===== UTILS =====
     /**
      * Chuyển đổi hex string thành byte array
      */

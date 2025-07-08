@@ -15,6 +15,7 @@ npx cap sync
 
 * [`connect(...)`](#connect)
 * [`disconnect()`](#disconnect)
+* [`isConnected()`](#isconnected)
 * [`listAvailablePorts(...)`](#listavailableports)
 * [`printText(...)`](#printtext)
 * [`printEncodedText(...)`](#printencodedtext)
@@ -71,6 +72,19 @@ disconnect() => any
 ```
 
 Ngắt kết nối với máy in hiện tại
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### isConnected()
+
+```typescript
+isConnected() => any
+```
+
+Kiểm tra trạng thái kết nối máy in (đã kết nối hay chưa)
 
 **Returns:** <code>any</code>
 
