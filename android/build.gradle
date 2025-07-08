@@ -45,13 +45,16 @@ android {
 repositories {
     google()
     mavenCentral()
+    // flatDir cho phép chỉ định thư mục chứa các thư viện dạng file (local .jar, .aar)
+    // Thư mục 'libs' sẽ được Gradle quét để tìm các file thư viện cục bộ
     flatDir {
         dirs 'libs'
     }
 }
 
-
 dependencies {
+    // Dòng này sẽ tự động thêm tất cả các file .jar và .aar trong thư mục libs vào project
+    // '*.aar' là định dạng Android Archive, dùng để đóng gói thư viện Android (bao gồm code, resource, manifest,...)
     implementation fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     implementation project(':capacitor-android')
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"

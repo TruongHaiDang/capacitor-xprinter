@@ -182,68 +182,12 @@ public class CapacitorXprinter {
     }
 
     /**
-     * Expose các hằng số trạng thái của POSConnect cho phía JS/TS.
-     * @return JSObject chứa mapping { CONST_NAME: value }
-     */
-    public com.getcapacitor.JSObject getStatusConstants() {
-        com.getcapacitor.JSObject constants = new com.getcapacitor.JSObject();
-        constants.put("CONNECT_SUCCESS", POSConnect.CONNECT_SUCCESS);
-        constants.put("CONNECT_FAIL", POSConnect.CONNECT_FAIL);
-        constants.put("SEND_FAIL", POSConnect.SEND_FAIL);
-        constants.put("CONNECT_INTERRUPT", POSConnect.CONNECT_INTERRUPT);
-        constants.put("USB_ATTACHED", POSConnect.USB_ATTACHED);
-        constants.put("USB_DETACHED", POSConnect.USB_DETACHED);
-        constants.put("BLUETOOTH_INTERRUPT", POSConnect.BLUETOOTH_INTERRUPT);
-        return constants;
-    }
-
-    /**
-     * Lấy danh sách thiết bị USB chi tiết (UsbDevice).
-     * @param context Context ứng dụng Android
-     * @return Danh sách UsbDevice
-     */
-    public List<android.hardware.usb.UsbDevice> listUsbDevices(Context context) {
-        ensureInit(context);
-        return POSConnect.getUsbDevice(context);
-    }
-
-    /**
      * Lấy danh sách cổng Serial (COM).
      * @return Danh sách tên cổng Serial
      */
     public List<String> listSerialPorts(Context context) {
         ensureInit(context);
         return POSConnect.getSerialPort();
-    }
-
-    /**
-     * Kết nối tới máy in qua địa chỉ MAC (LAN/Ethernet).
-     * @param mac Địa chỉ MAC của thiết bị
-     * @param context Context ứng dụng Android
-     * @param call Đối tượng PluginCall để trả về kết quả
-     */
-    public void connectByMac(String mac, Context context, PluginCall call) {
-        ensureInit(context);
-        IDeviceConnection device = POSConnect.createDevice(POSConnect.DEVICE_TYPE_ETHERNET);
-        IConnectListener listener = new IConnectListener() {
-            @Override
-            public void onStatus(int status, String info, String msg) {
-                JSObject result = new JSObject();
-                result.put("code", status);
-                result.put("msg", msg);
-                result.put("data", info);
-                if (status == POSConnect.CONNECT_SUCCESS) {
-                    currentDevice = device;
-                    // Mặc định dùng POS nếu không chỉ định
-                    currentPrinter = PrinterFactory.createPrinter("POS", currentDevice);
-                    call.resolve(result);
-                } else {
-                    call.reject(msg, (Exception)null, result);
-                }
-            }
-        };
-        // POSConnect.connectMac đã tự gọi createDevice ở trong, nhưng ta vẫn gọi để lấy reference device ở trên.
-        POSConnect.connectMac(mac, listener);
     }
 
     public void printText(JSObject options, PluginCall call) {

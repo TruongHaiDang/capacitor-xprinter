@@ -13,32 +13,31 @@ npx cap sync
 
 <docgen-index>
 
-* [`echo(...)`](#echo)
 * [`connect(...)`](#connect)
 * [`disconnect()`](#disconnect)
+* [`listAvailablePorts(...)`](#listavailableports)
 * [`printText(...)`](#printtext)
+* [`printEncodedText(...)`](#printencodedtext)
 * [`printQRCode(...)`](#printqrcode)
 * [`printBarcode(...)`](#printbarcode)
 * [`printImageFromPath(...)`](#printimagefrompath)
+* [`printImageBase64(...)`](#printimagebase64)
+* [`printLabel(...)`](#printlabel)
 * [`cutPaper()`](#cutpaper)
 * [`openCashDrawer(...)`](#opencashdrawer)
+* [`resetPrinter()`](#resetprinter)
+* [`selfTest()`](#selftest)
+* [`setProtocol(...)`](#setprotocol)
 * [`getPrinterStatus()`](#getprinterstatus)
 * [`readData()`](#readdata)
 * [`sendRawData(...)`](#sendrawdata)
-* [`printImageBase64(...)`](#printimagebase64)
-* [`printLabel(...)`](#printlabel)
-* [`resetPrinter()`](#resetprinter)
-* [`selfTest()`](#selftest)
-* [`listAvailablePorts(...)`](#listavailableports)
-* [`printEncodedText(...)`](#printencodedtext)
 * [`sendBatchCommands(...)`](#sendbatchcommands)
-* [`isConnected()`](#isconnected)
-* [`setProtocol(...)`](#setprotocol)
 * [`configText(...)`](#configtext)
 * [`configBarcode(...)`](#configbarcode)
 * [`configQRCode(...)`](#configqrcode)
 * [`configImage(...)`](#configimage)
 * [`configLabel(...)`](#configlabel)
+* [`echo(...)`](#echo)
 * [Interfaces](#interfaces)
 * [Type Aliases](#type-aliases)
 * [Enums](#enums)
@@ -47,21 +46,6 @@ npx cap sync
 
 <docgen-api>
 <!--Update the source file JSDoc comments and rerun docgen to update the docs below-->
-
-### echo(...)
-
-```typescript
-echo(options: { value: string; }) => any
-```
-
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: string; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
 
 ### connect(...)
 
@@ -93,6 +77,23 @@ Ngắt kết nối với máy in hiện tại
 --------------------
 
 
+### listAvailablePorts(...)
+
+```typescript
+listAvailablePorts(options: { type: 'USB' | 'BLUETOOTH' | 'SERIAL'; }) => any
+```
+
+Danh sách cổng khả dụng (USB/Bluetooth/Serial)
+
+| Param         | Type                                                     |
+| ------------- | -------------------------------------------------------- |
+| **`options`** | <code>{ type: 'USB' \| 'BLUETOOTH' \| 'SERIAL'; }</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
 ### printText(...)
 
 ```typescript
@@ -104,6 +105,23 @@ In văn bản đơn giản (chỉ hỗ trợ POSPrinter)
 | Param         | Type                                                                                                             |
 | ------------- | ---------------------------------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ text: string; alignment?: 'left' \| 'center' \| 'right'; textSize?: number; attribute?: number; }</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### printEncodedText(...)
+
+```typescript
+printEncodedText(options: { text: string; encoding: 'gbk' | 'utf-8' | 'shift-jis'; }) => any
+```
+
+In văn bản với encoding cụ thể (GBK, UTF-8, Shift-JIS,...)
+
+| Param         | Type                                                                      |
+| ------------- | ------------------------------------------------------------------------- |
+| **`options`** | <code>{ text: string; encoding: 'gbk' \| 'utf-8' \| 'shift-jis'; }</code> |
 
 **Returns:** <code>any</code>
 
@@ -161,6 +179,40 @@ In hình ảnh từ đường dẫn
 --------------------
 
 
+### printImageBase64(...)
+
+```typescript
+printImageBase64(options: { base64: string; width?: number; alignment?: 'left' | 'center' | 'right'; }) => any
+```
+
+In hình ảnh base64 – phù hợp khi không có file path
+
+| Param         | Type                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------- |
+| **`options`** | <code>{ base64: string; width?: number; alignment?: 'left' \| 'center' \| 'right'; }</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### printLabel(...)
+
+```typescript
+printLabel(options: { command: string; }) => any
+```
+
+In nội dung dạng label cho CPCL / TSPL / ZPL
+
+| Param         | Type                              |
+| ------------- | --------------------------------- |
+| **`options`** | <code>{ command: string; }</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
 ### cutPaper()
 
 ```typescript
@@ -185,6 +237,49 @@ Mở két tiền (POSPrinter)
 | Param         | Type                                                                 |
 | ------------- | -------------------------------------------------------------------- |
 | **`options`** | <code>{ pinNum?: number; onTime?: number; offTime?: number; }</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### resetPrinter()
+
+```typescript
+resetPrinter() => any
+```
+
+Thiết lập lại máy in
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### selfTest()
+
+```typescript
+selfTest() => any
+```
+
+Thực hiện in tự test của máy in (self-test)
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### setProtocol(...)
+
+```typescript
+setProtocol(options: { protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL'; }) => any
+```
+
+Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnect lại
+
+| Param         | Type                                                           |
+| ------------- | -------------------------------------------------------------- |
+| **`options`** | <code>{ protocol: 'POS' \| 'CPCL' \| 'TSPL' \| 'ZPL'; }</code> |
 
 **Returns:** <code>any</code>
 
@@ -234,100 +329,6 @@ Gửi dữ liệu tùy ý (raw byte) – nâng cao
 --------------------
 
 
-### printImageBase64(...)
-
-```typescript
-printImageBase64(options: { base64: string; width?: number; alignment?: 'left' | 'center' | 'right'; }) => any
-```
-
-In hình ảnh base64 – phù hợp khi không có file path
-
-| Param         | Type                                                                                        |
-| ------------- | ------------------------------------------------------------------------------------------- |
-| **`options`** | <code>{ base64: string; width?: number; alignment?: 'left' \| 'center' \| 'right'; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### printLabel(...)
-
-```typescript
-printLabel(options: { command: string; }) => any
-```
-
-In nội dung dạng label cho CPCL / TSPL / ZPL
-
-| Param         | Type                              |
-| ------------- | --------------------------------- |
-| **`options`** | <code>{ command: string; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### resetPrinter()
-
-```typescript
-resetPrinter() => any
-```
-
-Thiết lập lại máy in
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### selfTest()
-
-```typescript
-selfTest() => any
-```
-
-Thực hiện in tự test của máy in (self-test)
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### listAvailablePorts(...)
-
-```typescript
-listAvailablePorts(options: { type: 'USB' | 'BLUETOOTH' | 'SERIAL'; }) => any
-```
-
-Danh sách cổng khả dụng (USB/Bluetooth/Serial)
-
-| Param         | Type                                                     |
-| ------------- | -------------------------------------------------------- |
-| **`options`** | <code>{ type: 'USB' \| 'BLUETOOTH' \| 'SERIAL'; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### printEncodedText(...)
-
-```typescript
-printEncodedText(options: { text: string; encoding: 'gbk' | 'utf-8' | 'shift-jis'; }) => any
-```
-
-In văn bản với encoding cụ thể (GBK, UTF-8, Shift-JIS,...)
-
-| Param         | Type                                                                      |
-| ------------- | ------------------------------------------------------------------------- |
-| **`options`** | <code>{ text: string; encoding: 'gbk' \| 'utf-8' \| 'shift-jis'; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
 ### sendBatchCommands(...)
 
 ```typescript
@@ -339,36 +340,6 @@ Gửi nhiều lệnh liên tiếp (batch command mode)
 | Param         | Type                                                  |
 | ------------- | ----------------------------------------------------- |
 | **`options`** | <code>{ commands: {}; delayBetween?: number; }</code> |
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### isConnected()
-
-```typescript
-isConnected() => any
-```
-
-Kiểm tra kết nối hiện tại có đang hoạt động không
-
-**Returns:** <code>any</code>
-
---------------------
-
-
-### setProtocol(...)
-
-```typescript
-setProtocol(options: { protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL'; }) => any
-```
-
-Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnect lại
-
-| Param         | Type                                                           |
-| ------------- | -------------------------------------------------------------- |
-| **`options`** | <code>{ protocol: 'POS' \| 'CPCL' \| 'TSPL' \| 'ZPL'; }</code> |
 
 **Returns:** <code>any</code>
 
@@ -454,6 +425,21 @@ Cấu hình cho in label (CPCL/TSPL/ZPL)
 | Param         | Type             |
 | ------------- | ---------------- |
 | **`options`** | <code>any</code> |
+
+**Returns:** <code>any</code>
+
+--------------------
+
+
+### echo(...)
+
+```typescript
+echo(options: { value: string; }) => any
+```
+
+| Param         | Type                            |
+| ------------- | ------------------------------- |
+| **`options`** | <code>{ value: string; }</code> |
 
 **Returns:** <code>any</code>
 

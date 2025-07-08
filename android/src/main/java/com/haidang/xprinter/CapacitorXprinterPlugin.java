@@ -63,36 +63,6 @@ public class CapacitorXprinterPlugin extends Plugin {
     }
 
     /**
-     * Trả về các hằng số trạng thái của POSConnect.
-     */
-    @PluginMethod
-    public void getStatusConstants(PluginCall call) {
-        JSObject constants = implementation.getStatusConstants();
-        call.resolve(constants);
-    }
-
-    /**
-     * Lấy danh sách thiết bị USB chi tiết (UsbDevice).
-     * Trả về mảng object 'devices' với thông tin cơ bản của từng thiết bị.
-     */
-    @PluginMethod
-    public void listUsbDevices(PluginCall call) {
-        java.util.List<android.hardware.usb.UsbDevice> devices = implementation.listUsbDevices(getContext());
-        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray();
-        for (android.hardware.usb.UsbDevice dev : devices) {
-            JSObject obj = new JSObject();
-            obj.put("deviceId", dev.getDeviceId());
-            obj.put("vendorId", dev.getVendorId());
-            obj.put("productId", dev.getProductId());
-            obj.put("deviceName", dev.getDeviceName());
-            arr.put(obj);
-        }
-        JSObject ret = new JSObject();
-        ret.put("devices", arr);
-        call.resolve(ret);
-    }
-
-    /**
      * Lấy danh sách cổng Serial (COM).
      * Trả về mảng string 'ports'.
      */
@@ -103,16 +73,6 @@ public class CapacitorXprinterPlugin extends Plugin {
         JSObject ret = new JSObject();
         ret.put("ports", arr);
         call.resolve(ret);
-    }
-
-    /**
-     * Kết nối tới máy in qua địa chỉ MAC (LAN/Ethernet).
-     * Truyền vào chuỗi 'mac'.
-     */
-    @PluginMethod
-    public void connectByMac(PluginCall call) {
-        String mac = call.getString("mac");
-        implementation.connectByMac(mac, getContext(), call);
     }
 
     /**
