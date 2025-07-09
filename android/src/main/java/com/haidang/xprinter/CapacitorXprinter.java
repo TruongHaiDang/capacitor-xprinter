@@ -456,43 +456,33 @@ public class CapacitorXprinter {
     }
 
     public void printImageFromPath(JSObject options, Context context, PluginCall call) {
-        // Kiểm tra kết nối máy in
         if (currentPrinter == null) {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
-
-        // Lấy đường dẫn ảnh từ JSObject
-        String imagePath = options.getString("imagePath");
+        String imagePath = options.getString("bitmap");
         if (imagePath == null) {
             call.reject("Thiếu đường dẫn hình ảnh", (Exception) null, null);
             return;
         }
-
-        // Loại bỏ tiền tố file:// nếu có (để tương thích với BitmapFactory.decodeFile)
-        if (imagePath.startsWith("file://")) {
-            imagePath = imagePath.replaceFirst("file://", "");
-        }
-
         try {
-            // Phân nhánh theo loại máy in
             if (currentPrinter instanceof PosPrinterWrapper) {
-                int width = options.has("width") ? options.getInteger("width") : 0;
-                String alignStr = options.getString("alignment", "left");
-                int alignment;
+                String alignStr = posImageAlignment != null ? posImageAlignment : "left";
+                int alignment = 0;
                 switch (alignStr.toLowerCase()) {
-                    case "center": alignment = 1; break;
-                    case "right": alignment = 2; break;
-                    default: alignment = 0; break;
+                    case "center": alignment = net.posprinter.POSConst.ALIGNMENT_CENTER; break;
+                    case "right": alignment = net.posprinter.POSConst.ALIGNMENT_RIGHT; break;
+                    default: alignment = net.posprinter.POSConst.ALIGNMENT_LEFT; break;
                 }
+                int width = posImageWidth != null ? posImageWidth : 0;
+                // int mode = posImageMode != null ? posImageMode : 0; // Không dùng cho PosPrinterWrapper
                 ((PosPrinterWrapper) currentPrinter).printImageFromPath(imagePath, width, alignment, context);
-
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                int mode = options.has("mode") ? options.getInteger("mode") : 0;
-                ((CpclPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, mode, context);
-
+                String path = cpclImagePath != null ? cpclImagePath : imagePath;
+                int x = cpclImageX != null ? cpclImageX : 0;
+                int y = cpclImageY != null ? cpclImageY : 0;
+                int mode = cpclImageMode != null ? cpclImageMode : 0;
+                ((CpclPrinterWrapper) currentPrinter).printImageFromPath(path, x, y, mode, context);
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -509,7 +499,6 @@ public class CapacitorXprinter {
                     }
                 }
                 ((TsplPrinterWrapper) currentPrinter).drawImageFromPath(imagePath, x, y, mode, context);
-
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -517,16 +506,12 @@ public class CapacitorXprinter {
                 int height = options.has("height") ? options.getInteger("height") : 200;
                 ((ZplPrinterWrapper) currentPrinter).printImageFromPath(imagePath, x, y, width, height, context);
             }
-
-            // Phản hồi thành công
             JSObject ret = new JSObject();
             ret.put("code", 200);
             ret.put("msg", "In hình ảnh thành công");
             ret.put("data", null);
             call.resolve(ret);
-
         } catch (Exception ex) {
-            // Trả lỗi về JS
             JSObject ret = new JSObject();
             ret.put("code", 500);
             ret.put("msg", ex.getMessage());
@@ -540,29 +525,29 @@ public class CapacitorXprinter {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
-        
-        String base64 = options.getString("base64");
+        String base64 = options.getString("bitmap");
         if (base64 == null) {
             call.reject("Thiếu dữ liệu base64", (Exception) null, null);
             return;
         }
-        
         try {
             if (currentPrinter instanceof PosPrinterWrapper) {
-                int width = options.has("width") ? options.getInteger("width") : 0;
-                String alignStr = options.getString("alignment", "left");
+                String alignStr = posImageAlignment != null ? posImageAlignment : "left";
                 int alignment = 0;
                 switch (alignStr.toLowerCase()) {
-                    case "center": alignment = 1; break;
-                    case "right": alignment = 2; break;
-                    default: alignment = 0; break;
+                    case "center": alignment = net.posprinter.POSConst.ALIGNMENT_CENTER; break;
+                    case "right": alignment = net.posprinter.POSConst.ALIGNMENT_RIGHT; break;
+                    default: alignment = net.posprinter.POSConst.ALIGNMENT_LEFT; break;
                 }
+                int width = posImageWidth != null ? posImageWidth : 0;
+                // int mode = posImageMode != null ? posImageMode : 0; // Không dùng cho PosPrinterWrapper
                 ((PosPrinterWrapper) currentPrinter).printImageBase64(base64, width, alignment);
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                int mode = options.has("mode") ? options.getInteger("mode") : 0;
-                ((CpclPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, mode);
+                String b64 = cpclImageBase64 != null ? cpclImageBase64 : base64;
+                int x = cpclImageX != null ? cpclImageX : 0;
+                int y = cpclImageY != null ? cpclImageY : 0;
+                int mode = cpclImageMode != null ? cpclImageMode : 0;
+                ((CpclPrinterWrapper) currentPrinter).printImageBase64(b64, x, y, mode);
             } else if (currentPrinter instanceof TsplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -586,7 +571,6 @@ public class CapacitorXprinter {
                 int height = options.has("height") ? options.getInteger("height") : 200;
                 ((ZplPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, width, height);
             }
-            
             JSObject ret = new JSObject();
             ret.put("code", 200);
             ret.put("msg", "In hình ảnh base64 thành công");
@@ -900,6 +884,12 @@ public class CapacitorXprinter {
     private String posQrAlignment = null;
     private Integer posQrModuleSize = null;
     private Integer posQrEcLevel = null;
+    // Image config POS
+    private String posImageBitmap = null;
+    private String posImageAlignment = null;
+    private Integer posImageWidth = null;
+    private Integer posImageMode = null;
+    private Integer posImageDensity = null;
 
     public void configPosText(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
@@ -1205,17 +1195,34 @@ public class CapacitorXprinter {
             call.reject("Chưa kết nối POSPrinter");
             return;
         }
+        if (options.has("bitmap")) posImageBitmap = options.getString("bitmap");
+        if (options.has("alignment")) posImageAlignment = options.getString("alignment");
+        if (options.has("width")) posImageWidth = options.getInteger("width");
+        if (options.has("mode")) posImageMode = options.getInteger("mode");
+        if (options.has("density")) posImageDensity = options.getInteger("density");
         JSObject ret = new JSObject();
         ret.put("code", 200);
         ret.put("msg", "Cấu hình image POS thành công");
         call.resolve(ret);
     }
 
+    // Image config CPCL
+    private String cpclImagePath = null;
+    private Integer cpclImageX = null;
+    private Integer cpclImageY = null;
+    private Integer cpclImageMode = null;
+    private String cpclImageBase64 = null;
+
     public void configCpclImage(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
             call.reject("Chưa kết nối CPCLPrinter");
             return;
         }
+        if (options.has("imagePath")) cpclImagePath = options.getString("imagePath");
+        if (options.has("x")) cpclImageX = options.getInteger("x");
+        if (options.has("y")) cpclImageY = options.getInteger("y");
+        if (options.has("mode")) cpclImageMode = options.getInteger("mode");
+        if (options.has("base64")) cpclImageBase64 = options.getString("base64");
         JSObject ret = new JSObject();
         ret.put("code", 200);
         ret.put("msg", "Cấu hình image CPCL thành công");

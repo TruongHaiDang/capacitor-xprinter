@@ -180,11 +180,7 @@ import { CommonModule } from '@angular/common';
         <ng-container *ngIf="type === 'image'">
           <ion-item>
             <ion-label position="floating">Đường dẫn/Base64</ion-label>
-            <ion-input [(ngModel)]="config.imagePath" name="imagePath"></ion-input>
-          </ion-item>
-          <ion-item *ngIf="protocol === 'POS'">
-            <ion-label position="floating">Chiều rộng</ion-label>
-            <ion-input type="number" [(ngModel)]="config.width" name="width"></ion-input>
+            <ion-input [(ngModel)]="config.bitmap" name="bitmap"></ion-input>
           </ion-item>
           <ion-item *ngIf="protocol === 'POS'">
             <ion-label position="floating">Căn lề</ion-label>
@@ -194,7 +190,23 @@ import { CommonModule } from '@angular/common';
               <ion-select-option value="right">Phải</ion-select-option>
             </ion-select>
           </ion-item>
-          <!-- Các trường cho CPCL, TSPL, ZPL tương tự, tuỳ theo options từng loại -->
+          <ion-item *ngIf="protocol === 'POS'">
+            <ion-label position="floating">Độ rộng (px)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.width" name="width"></ion-input>
+          </ion-item>
+          <ion-item *ngIf="protocol === 'POS'">
+            <ion-label position="floating">Chế độ in ảnh</ion-label>
+            <ion-select [(ngModel)]="config.mode" name="mode">
+              <ion-select-option value="0">Bình thường</ion-select-option>
+              <ion-select-option value="1">Double Width</ion-select-option>
+              <ion-select-option value="2">Double Height</ion-select-option>
+              <ion-select-option value="3">Double Width & Height</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item *ngIf="protocol === 'POS'">
+            <ion-label position="floating">Độ đậm nhạt (density)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.density" name="density"></ion-input>
+          </ion-item>
         </ng-container>
 
         <ion-button expand="block" (click)="onPrint()">In</ion-button>

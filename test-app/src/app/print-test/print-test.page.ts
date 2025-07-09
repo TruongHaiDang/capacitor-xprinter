@@ -155,13 +155,13 @@ export class PrintTestPage implements OnInit {
       if (protocol === 'ZPL') return { data: '1234567890', x: 50, y: 50, codeType: '^BC', orientation: 'N', height: 100, printInterpretationLine: 'Y', printInterpretationLineAbove: 'N', checkDigit: 'N' };
     }
     if (type === 'qr') {
-      if (protocol === 'POS') return { data: 'https://xprinter.net', moduleSize: 4, ecLevel: 0, alignment: 'center' };
+      if (protocol === 'POS') return { data: 'https://xprinter.net', alignment: 'center', moduleSize: 4, errorCorrectionLevel: 0 };
       if (protocol === 'CPCL') return { data: 'https://xprinter.net', x: 50, y: 50, model: 2, unitWidth: 6 };
       if (protocol === 'TSPL') return { data: 'https://xprinter.net', x: 50, y: 50, ecLevel: 'M', cellWidth: 4, mode: 'A', rotation: 0, model: 'M2' };
       if (protocol === 'ZPL') return { data: 'https://xprinter.net', x: 50, y: 50, model: 2, magnification: 3, errorCorrection: 'M', maskValue: 0 };
     }
     if (type === 'image') {
-      if (protocol === 'POS') return { imagePath: '', width: 200, alignment: 'center', base64: '' };
+      if (protocol === 'POS') return { bitmap: '', alignment: 'center', width: 200, mode: 0, density: 0 };
       if (protocol === 'CPCL') return { imagePath: '', x: 50, y: 50, mode: 0, base64: '' };
       if (protocol === 'TSPL') return { imagePath: '', x: 50, y: 50, mode: 'OVERWRITE', base64: '' };
       if (protocol === 'ZPL') return { imagePath: '', x: 50, y: 50, width: 200, height: 200, base64: '' };
@@ -303,10 +303,16 @@ export class PrintTestPage implements OnInit {
         return;
       }
       const defaultConfig = this.getDefaultConfig('image', this.selectedProtocol);
-      defaultConfig.imagePath = filePath;
+      defaultConfig.bitmap = filePath;
       const config = await this.openPrintConfigModal('image', defaultConfig);
       if (!config) return;
-      const res = await this.xprinter.printImageFromPath(config);
+      let res;
+      if (this.selectedProtocol === 'POS') {
+        await this.xprinter.configImage(config);
+        res = await this.xprinter.printImageFromPath({ bitmap: config.bitmap });
+      } else {
+        res = await this.xprinter.printImageFromPath(config);
+      }
       alert(res.msg || 'In ảnh từ thư viện (path) thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi chọn/in ảnh từ thư viện');
@@ -330,10 +336,16 @@ export class PrintTestPage implements OnInit {
         return;
       }
       const defaultConfig = this.getDefaultConfig('image', this.selectedProtocol);
-      defaultConfig.base64 = base64;
+      defaultConfig.bitmap = base64;
       const config = await this.openPrintConfigModal('image', defaultConfig);
       if (!config) return;
-      const res = await this.xprinter.printImageBase64(config);
+      let res;
+      if (this.selectedProtocol === 'POS') {
+        await this.xprinter.configImage(config);
+        res = await this.xprinter.printImageBase64({ bitmap: config.bitmap });
+      } else {
+        res = await this.xprinter.printImageBase64(config);
+      }
       alert(res.msg || 'In ảnh chụp (base64) thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi chụp/in ảnh');
