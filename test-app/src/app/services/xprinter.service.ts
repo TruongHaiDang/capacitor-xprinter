@@ -66,8 +66,12 @@ export class XprinterService {
     return CapacitorXprinter.disconnect();
   }
 
-  async printText(text: string) {
-    return CapacitorXprinter.printText({ text });
+  async printText(textOrOptions: string | any) {
+    if (typeof textOrOptions === 'string') {
+      return CapacitorXprinter.printText({ text: textOrOptions });
+    } else {
+      return CapacitorXprinter.printText(textOrOptions);
+    }
   }
 
   async printQRCode(options: any) {

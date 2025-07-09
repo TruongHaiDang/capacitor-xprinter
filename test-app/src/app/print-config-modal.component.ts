@@ -209,6 +209,168 @@ import { CommonModule } from '@angular/common';
           </ion-item>
         </ng-container>
 
+        <ng-container *ngIf="type === 'text' && protocol === 'TSPL'">
+          <ion-item>
+            <ion-label position="floating">Vị trí ngang (x)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.x" name="x"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Vị trí dọc (y)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.y" name="y"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Font chữ</ion-label>
+            <ion-input [(ngModel)]="config.font" name="font"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Góc xoay</ion-label>
+            <ion-select [(ngModel)]="config.rotation" name="rotation">
+              <ion-select-option [value]="0">0°</ion-select-option>
+              <ion-select-option [value]="90">90°</ion-select-option>
+              <ion-select-option [value]="180">180°</ion-select-option>
+              <ion-select-option [value]="270">270°</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Tỉ lệ ngang (xScale)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.xScale" name="xScale"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Tỉ lệ dọc (yScale)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.yScale" name="yScale"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Nội dung</ion-label>
+            <ion-input [(ngModel)]="config.content" name="content"></ion-input>
+          </ion-item>
+        </ng-container>
+
+        <ng-container *ngIf="type === 'barcode' && protocol === 'TSPL'">
+          <ion-item>
+            <ion-label position="floating">Vị trí ngang (x)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.x" name="x"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Vị trí dọc (y)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.y" name="y"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Loại mã vạch</ion-label>
+            <ion-input [(ngModel)]="config.type" name="type"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Chiều cao</ion-label>
+            <ion-input type="number" [(ngModel)]="config.height" name="height"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Hiển thị text</ion-label>
+            <ion-input type="number" [(ngModel)]="config.readable" name="readable"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Góc xoay</ion-label>
+            <ion-select [(ngModel)]="config.rotation" name="rotation">
+              <ion-select-option [value]="0">0°</ion-select-option>
+              <ion-select-option [value]="90">90°</ion-select-option>
+              <ion-select-option [value]="180">180°</ion-select-option>
+              <ion-select-option [value]="270">270°</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Độ rộng vạch nhỏ (narrow)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.narrow" name="narrow"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Độ rộng vạch lớn (wide)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.wide" name="wide"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Dữ liệu mã vạch</ion-label>
+            <ion-input [(ngModel)]="config.content" name="content"></ion-input>
+          </ion-item>
+        </ng-container>
+
+        <ng-container *ngIf="type === 'qr' && protocol === 'TSPL'">
+          <ion-item>
+            <ion-label position="floating">Vị trí ngang (x)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.x" name="x"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Vị trí dọc (y)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.y" name="y"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Mức sửa lỗi (ecLevel)</ion-label>
+            <ion-select [(ngModel)]="config.ecLevel" name="ecLevel">
+              <ion-select-option value="L">L</ion-select-option>
+              <ion-select-option value="M">M</ion-select-option>
+              <ion-select-option value="Q">Q</ion-select-option>
+              <ion-select-option value="H">H</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Kích thước ô (cellWidth)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.cellWidth" name="cellWidth"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Chế độ mã hóa (mode)</ion-label>
+            <ion-select [(ngModel)]="config.mode" name="mode">
+              <ion-select-option value="A">Auto</ion-select-option>
+              <ion-select-option value="M">Manual</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Góc xoay</ion-label>
+            <ion-select [(ngModel)]="config.rotation" name="rotation">
+              <ion-select-option [value]="0">0°</ion-select-option>
+              <ion-select-option [value]="90">90°</ion-select-option>
+              <ion-select-option [value]="180">180°</ion-select-option>
+              <ion-select-option [value]="270">270°</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Model</ion-label>
+            <ion-select [(ngModel)]="config.model" name="model">
+              <ion-select-option value="M1">M1</ion-select-option>
+              <ion-select-option value="M2">M2</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Mặt nạ (mask)</ion-label>
+            <ion-input [(ngModel)]="config.mask" name="mask"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Nội dung</ion-label>
+            <ion-input [(ngModel)]="config.content" name="content"></ion-input>
+          </ion-item>
+        </ng-container>
+
+        <ng-container *ngIf="type === 'image' && protocol === 'TSPL'">
+          <ion-item>
+            <ion-label position="floating">Vị trí ngang (x)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.x" name="x"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Vị trí dọc (y)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.y" name="y"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Chế độ in (mode)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.mode" name="mode"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Độ rộng ảnh (width)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.width" name="width"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Ảnh (bitmap)</ion-label>
+            <ion-input [(ngModel)]="config.bitmap" name="bitmap"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Thuật toán chuyển ảnh (algorithm)</ion-label>
+            <ion-input [(ngModel)]="config.algorithm" name="algorithm"></ion-input>
+          </ion-item>
+        </ng-container>
+
         <ion-button expand="block" (click)="onPrint()">In</ion-button>
       </form>
     </ion-content>

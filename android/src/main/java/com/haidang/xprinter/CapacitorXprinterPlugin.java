@@ -259,7 +259,7 @@ public class CapacitorXprinterPlugin extends Plugin {
                 implementation.configCpclImage(options, call);
                 break;
             case "TSPL":
-                implementation.configTsplImage(options, call);
+                implementation.configImage(options, call);
                 break;
             case "ZPL":
                 implementation.configZplImage(options, call);

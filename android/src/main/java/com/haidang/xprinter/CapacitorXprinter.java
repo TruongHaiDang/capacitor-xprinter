@@ -195,7 +195,7 @@ public class CapacitorXprinter {
     // ===== PRINT =====
     public void printText(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[printText] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
     
@@ -206,9 +206,17 @@ public class CapacitorXprinter {
         }
     
         try {
-            if (currentPrinter instanceof PosPrinterWrapper) {
+            if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = tsplTextX != null ? tsplTextX : 0;
+                int y = tsplTextY != null ? tsplTextY : 0;
+                String font = tsplTextFont != null ? tsplTextFont : "0";
+                int rotation = tsplTextRotation != null ? tsplTextRotation : 0;
+                int xScale = tsplTextXScale != null ? tsplTextXScale : 1;
+                int yScale = tsplTextYScale != null ? tsplTextYScale : 1;
+                String content = tsplTextContent != null ? tsplTextContent : text;
+                ((TsplPrinterWrapper) currentPrinter).drawText(content, x, y, font, rotation, xScale, yScale);
+            } else if (currentPrinter instanceof PosPrinterWrapper) {
                 PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
-    
                 // Lấy config từ options nếu có, không thì lấy từ biến instance
                 String alignmentStr = options.has("alignment") ? options.getString("alignment") : posTextAlignment;
                 int alignment;
@@ -273,19 +281,6 @@ public class CapacitorXprinter {
                     ((CpclPrinterWrapper) currentPrinter).printText(text, x, y, font, rotation);
                 }
     
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                if (!options.has("x") && !options.has("font") && !options.has("rotation")) {
-                    ((TsplPrinterWrapper) currentPrinter).printText(text, null, null, null);
-                } else {
-                    int x = options.has("x") ? options.getInteger("x") : 0;
-                    int y = options.has("y") ? options.getInteger("y") : 0;
-                    String font = options.getString("font", "0");
-                    int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
-                    int xScale = options.has("xScale") ? options.getInteger("xScale") : 1;
-                    int yScale = options.has("yScale") ? options.getInteger("yScale") : 1;
-                    ((TsplPrinterWrapper) currentPrinter).drawText(text, x, y, font, rotation, xScale, yScale);
-                }
-    
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 if (!options.has("x") && !options.has("font")) {
                     ((ZplPrinterWrapper) currentPrinter).printText(text, null, null, null, null, null, null);
@@ -330,7 +325,7 @@ public class CapacitorXprinter {
 
     public void printQRCode(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[printQRCode] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         String data = options.getString("data");
@@ -339,7 +334,18 @@ public class CapacitorXprinter {
             return;
         }
         try {
-            if (currentPrinter instanceof PosPrinterWrapper) {
+            if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = tsplQrX != null ? tsplQrX : 0;
+                int y = tsplQrY != null ? tsplQrY : 0;
+                String ecLevel = tsplQrEcLevel != null ? tsplQrEcLevel : "M";
+                int cellWidth = tsplQrCellWidth != null ? tsplQrCellWidth : 4;
+                String mode = tsplQrMode != null ? tsplQrMode : "A";
+                int rotation = tsplQrRotation != null ? tsplQrRotation : 0;
+                String model = tsplQrModel != null ? tsplQrModel : "M2";
+                String mask = tsplQrMask != null ? tsplQrMask : null;
+                String content = tsplQrContent != null ? tsplQrContent : data;
+                ((TsplPrinterWrapper) currentPrinter).drawQRCode(content, x, y, ecLevel, cellWidth, mode, rotation);
+            } else if (currentPrinter instanceof PosPrinterWrapper) {
                 int moduleSize = posQrModuleSize != null ? posQrModuleSize : 4;
                 int ecLevel = posQrEcLevel != null ? posQrEcLevel : 0;
                 String alignStr = posQrAlignment != null ? posQrAlignment : "left";
@@ -357,23 +363,6 @@ public class CapacitorXprinter {
                 int model = options.has("model") ? options.getInteger("model") : 2;
                 int unitWidth = options.has("unitWidth") ? options.getInteger("unitWidth") : 6;
                 ((CpclPrinterWrapper) currentPrinter).printQRCode(data, x, y, model, unitWidth);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                String ecLevel = options.getString("ecLevel", "M");
-                int cellWidth = options.has("cellWidth") ? options.getInteger("cellWidth") : 4;
-                String mode = options.getString("mode", "A");
-                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
-                String model = options.getString("model", "M2");
-                ((TsplPrinterWrapper) currentPrinter).drawQRCode(data, x, y, ecLevel, cellWidth, mode, rotation);
-            } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                int model = options.has("model") ? options.getInteger("model") : 2;
-                int magnification = options.has("magnification") ? options.getInteger("magnification") : 3;
-                String errorCorrection = options.getString("errorCorrection", "M");
-                int maskValue = options.has("maskValue") ? options.getInteger("maskValue") : 0;
-                ((ZplPrinterWrapper) currentPrinter).printQRCode(data, x, y, model, magnification, errorCorrection, maskValue);
             }
             JSObject ret = new JSObject();
             ret.put("code", 200);
@@ -391,7 +380,7 @@ public class CapacitorXprinter {
 
     public void printBarcode(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[printBarcode] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         String data = options.getString("data");
@@ -400,7 +389,18 @@ public class CapacitorXprinter {
             return;
         }
         try {
-            if (currentPrinter instanceof PosPrinterWrapper) {
+            if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = tsplBarcodeX != null ? tsplBarcodeX : 0;
+                int y = tsplBarcodeY != null ? tsplBarcodeY : 0;
+                String codeType = tsplBarcodeType != null ? tsplBarcodeType : "128";
+                int height = tsplBarcodeHeight != null ? tsplBarcodeHeight : 40;
+                int readable = tsplBarcodeReadable != null ? tsplBarcodeReadable : 1;
+                int rotation = tsplBarcodeRotation != null ? tsplBarcodeRotation : 0;
+                int narrow = tsplBarcodeNarrow != null ? tsplBarcodeNarrow : 2;
+                int wide = tsplBarcodeWide != null ? tsplBarcodeWide : 2;
+                String content = tsplBarcodeContent != null ? tsplBarcodeContent : data;
+                ((TsplPrinterWrapper) currentPrinter).drawBarcode(content, x, y, codeType, height, readable, rotation, narrow, wide);
+            } else if (currentPrinter instanceof PosPrinterWrapper) {
                 int codeType = posBarcodeType != null ? posBarcodeType : 73; // CODE128
                 int width = posBarcodeWidth != null ? posBarcodeWidth : 2;
                 int height = posBarcodeHeight != null ? posBarcodeHeight : 162;
@@ -420,16 +420,6 @@ public class CapacitorXprinter {
                 int height = options.has("height") ? options.getInteger("height") : 32;
                 int readable = options.has("readable") ? options.getInteger("readable") : 1;
                 ((CpclPrinterWrapper) currentPrinter).printBarcode(data, x, y, codeType, height, readable);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                String codeType = options.getString("codeType", "128");
-                int height = options.has("height") ? options.getInteger("height") : 40;
-                int readable = options.has("readable") ? options.getInteger("readable") : 1;
-                int rotation = options.has("rotation") ? options.getInteger("rotation") : 0;
-                int narrow = options.has("narrow") ? options.getInteger("narrow") : 2;
-                int wide = options.has("wide") ? options.getInteger("wide") : 2;
-                ((TsplPrinterWrapper) currentPrinter).drawBarcode(data, x, y, codeType, height, readable, rotation, narrow, wide);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -457,7 +447,7 @@ public class CapacitorXprinter {
 
     public void printImageFromPath(JSObject options, Context context, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[printImageFromPath] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         String imagePath = options.getString("bitmap");
@@ -466,7 +456,13 @@ public class CapacitorXprinter {
             return;
         }
         try {
-            if (currentPrinter instanceof PosPrinterWrapper) {
+            if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = tsplImageX != null ? tsplImageX : 0;
+                int y = tsplImageY != null ? tsplImageY : 0;
+                int mode = tsplImageMode != null ? tsplImageMode : 0;
+                String bitmap = tsplImageBitmap != null ? tsplImageBitmap : imagePath;
+                ((TsplPrinterWrapper) currentPrinter).drawImageFromPath(bitmap, x, y, mode, context);
+            } else if (currentPrinter instanceof PosPrinterWrapper) {
                 String alignStr = posImageAlignment != null ? posImageAlignment : "left";
                 int alignment = 0;
                 switch (alignStr.toLowerCase()) {
@@ -483,22 +479,6 @@ public class CapacitorXprinter {
                 int y = cpclImageY != null ? cpclImageY : 0;
                 int mode = cpclImageMode != null ? cpclImageMode : 0;
                 ((CpclPrinterWrapper) currentPrinter).printImageFromPath(path, x, y, mode, context);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                int mode = 0;
-                if (options.has("mode")) {
-                    Object m = options.get("mode");
-                    if (m instanceof Number) {
-                        mode = ((Number) m).intValue();
-                    } else if (m instanceof String) {
-                        String ms = (String) m;
-                        if (ms.equalsIgnoreCase("OR")) mode = 1;
-                        else if (ms.equalsIgnoreCase("XOR")) mode = 2;
-                        else mode = 0;
-                    }
-                }
-                ((TsplPrinterWrapper) currentPrinter).drawImageFromPath(imagePath, x, y, mode, context);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -522,7 +502,7 @@ public class CapacitorXprinter {
 
     public void printImageBase64(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[printImageBase64] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         String base64 = options.getString("bitmap");
@@ -531,7 +511,13 @@ public class CapacitorXprinter {
             return;
         }
         try {
-            if (currentPrinter instanceof PosPrinterWrapper) {
+            if (currentPrinter instanceof TsplPrinterWrapper) {
+                int x = tsplImageX != null ? tsplImageX : 0;
+                int y = tsplImageY != null ? tsplImageY : 0;
+                int mode = tsplImageMode != null ? tsplImageMode : 0;
+                String bitmap = tsplImageBitmap != null ? tsplImageBitmap : base64;
+                ((TsplPrinterWrapper) currentPrinter).drawImageBase64(bitmap, x, y, mode);
+            } else if (currentPrinter instanceof PosPrinterWrapper) {
                 String alignStr = posImageAlignment != null ? posImageAlignment : "left";
                 int alignment = 0;
                 switch (alignStr.toLowerCase()) {
@@ -548,22 +534,6 @@ public class CapacitorXprinter {
                 int y = cpclImageY != null ? cpclImageY : 0;
                 int mode = cpclImageMode != null ? cpclImageMode : 0;
                 ((CpclPrinterWrapper) currentPrinter).printImageBase64(b64, x, y, mode);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                int x = options.has("x") ? options.getInteger("x") : 0;
-                int y = options.has("y") ? options.getInteger("y") : 0;
-                int mode = 0;
-                if (options.has("mode")) {
-                    Object m = options.get("mode");
-                    if (m instanceof Number) {
-                        mode = ((Number) m).intValue();
-                    } else if (m instanceof String) {
-                        String ms = (String) m;
-                        if (ms.equalsIgnoreCase("OR")) mode = 1;
-                        else if (ms.equalsIgnoreCase("XOR")) mode = 2;
-                        else mode = 0;
-                    }
-                }
-                ((TsplPrinterWrapper) currentPrinter).drawImageBase64(base64, x, y, mode);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
@@ -587,7 +557,7 @@ public class CapacitorXprinter {
 
     public void printLabel(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[printLabel] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         
@@ -626,7 +596,7 @@ public class CapacitorXprinter {
     // ===== PRINTER CONTROL =====
     public void cutPaper(PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[cutPaper] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         if (!(currentPrinter instanceof PosPrinterWrapper)) {
@@ -652,7 +622,7 @@ public class CapacitorXprinter {
 
     public void openCashDrawer(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[openCashDrawer] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         if (!(currentPrinter instanceof PosPrinterWrapper)) {
@@ -681,7 +651,7 @@ public class CapacitorXprinter {
 
     public void resetPrinter(PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[resetPrinter] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         if (!(currentPrinter instanceof PosPrinterWrapper)) {
@@ -707,7 +677,7 @@ public class CapacitorXprinter {
 
     public void selfTest(PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[selfTest] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         if (!(currentPrinter instanceof PosPrinterWrapper)) {
@@ -762,7 +732,7 @@ public class CapacitorXprinter {
     // ===== STATUS & DATA =====
     public void getPrinterStatus(PluginCall call) {
         if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            call.reject("[getPrinterStatus] Chưa kết nối máy in", (Exception) null, null);
             return;
         }
         
@@ -836,7 +806,7 @@ public class CapacitorXprinter {
 
     public void sendPosCommand(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chưa kết nối POSPrinter");
+            call.reject("[sendPosCommand] Chưa kết nối POSPrinter");
             return;
         }
         String command = options.getString("command");
@@ -893,7 +863,7 @@ public class CapacitorXprinter {
 
     public void configPosText(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chưa kết nối POSPrinter");
+            call.reject("[configPosText] Chưa kết nối POSPrinter");
             return;
         }
 
@@ -964,11 +934,97 @@ public class CapacitorXprinter {
         call.resolve(ret);
     }
 
+    // TSPL config - text
+    private Integer tsplTextX = null;
+    private Integer tsplTextY = null;
+    private String tsplTextFont = null;
+    private Integer tsplTextRotation = null;
+    private Integer tsplTextXScale = null;
+    private Integer tsplTextYScale = null;
+    private String tsplTextContent = null;
+    // TSPL config - barcode
+    private Integer tsplBarcodeX = null;
+    private Integer tsplBarcodeY = null;
+    private String tsplBarcodeType = null;
+    private Integer tsplBarcodeHeight = null;
+    private Integer tsplBarcodeReadable = null;
+    private Integer tsplBarcodeRotation = null;
+    private Integer tsplBarcodeNarrow = null;
+    private Integer tsplBarcodeWide = null;
+    private String tsplBarcodeContent = null;
+    // TSPL config - qrcode
+    private Integer tsplQrX = null;
+    private Integer tsplQrY = null;
+    private String tsplQrEcLevel = null;
+    private Integer tsplQrCellWidth = null;
+    private String tsplQrMode = null;
+    private Integer tsplQrRotation = null;
+    private String tsplQrModel = null;
+    private String tsplQrMask = null;
+    private String tsplQrContent = null;
+    // TSPL config - image
+    private Integer tsplImageX = null;
+    private Integer tsplImageY = null;
+    private Integer tsplImageMode = null;
+    private Integer tsplImageWidth = null;
+    private String tsplImageBitmap = null;
+    private String tsplImageAlgorithm = null;
+
     public void configTsplText(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter");
+            return;
+        }
+        if (options.has("x")) tsplTextX = options.getInteger("x");
+        if (options.has("y")) tsplTextY = options.getInteger("y");
+        if (options.has("font")) tsplTextFont = options.getString("font");
+        if (options.has("rotation")) tsplTextRotation = options.getInteger("rotation");
+        if (options.has("xScale")) tsplTextXScale = options.getInteger("xScale");
+        if (options.has("yScale")) tsplTextYScale = options.getInteger("yScale");
+        if (options.has("content")) tsplTextContent = options.getString("content");
         JSObject ret = new JSObject();
-        ret.put("code", 501);
-        ret.put("msg", "Chức năng configTsplText chưa được hỗ trợ");
-        ret.put("data", null);
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình text TSPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configTsplBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter");
+            return;
+        }
+        if (options.has("x")) tsplBarcodeX = options.getInteger("x");
+        if (options.has("y")) tsplBarcodeY = options.getInteger("y");
+        if (options.has("type")) tsplBarcodeType = options.getString("type");
+        if (options.has("height")) tsplBarcodeHeight = options.getInteger("height");
+        if (options.has("readable")) tsplBarcodeReadable = options.getInteger("readable");
+        if (options.has("rotation")) tsplBarcodeRotation = options.getInteger("rotation");
+        if (options.has("narrow")) tsplBarcodeNarrow = options.getInteger("narrow");
+        if (options.has("wide")) tsplBarcodeWide = options.getInteger("wide");
+        if (options.has("content")) tsplBarcodeContent = options.getString("content");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình barcode TSPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configTsplQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter");
+            return;
+        }
+        if (options.has("x")) tsplQrX = options.getInteger("x");
+        if (options.has("y")) tsplQrY = options.getInteger("y");
+        if (options.has("ecLevel")) tsplQrEcLevel = options.getString("ecLevel");
+        if (options.has("cellWidth")) tsplQrCellWidth = options.getInteger("cellWidth");
+        if (options.has("mode")) tsplQrMode = options.getString("mode");
+        if (options.has("rotation")) tsplQrRotation = options.getInteger("rotation");
+        if (options.has("model")) tsplQrModel = options.getString("model");
+        if (options.has("mask")) tsplQrMask = options.getString("mask");
+        if (options.has("content")) tsplQrContent = options.getString("content");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình QRCode TSPL thành công");
         call.resolve(ret);
     }
 
@@ -1091,7 +1147,7 @@ public class CapacitorXprinter {
 
     public void configPosBarcode(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chưa kết nối POSPrinter");
+            call.reject("[configPosBarcode] Chưa kết nối POSPrinter");
             return;
         }
         // Lưu lại config barcode POS nếu có
@@ -1118,18 +1174,6 @@ public class CapacitorXprinter {
         call.resolve(ret);
     }
 
-    public void configTsplBarcode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
-            call.reject("Chưa kết nối TSPLPrinter");
-            return;
-        }
-        // Có thể lưu lại config barcode cho TSPL nếu cần
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình barcode TSPL thành công");
-        call.resolve(ret);
-    }
-
     public void configZplBarcode(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
             call.reject("Chưa kết nối ZPLPrinter");
@@ -1144,7 +1188,7 @@ public class CapacitorXprinter {
 
     public void configPosQRCode(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chưa kết nối POSPrinter");
+            call.reject("[configPosQRCode] Chưa kết nối POSPrinter");
             return;
         }
         if (options.has("data")) posQrData = options.getString("data");
@@ -1168,17 +1212,6 @@ public class CapacitorXprinter {
         call.resolve(ret);
     }
 
-    public void configTsplQRCode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
-            call.reject("Chưa kết nối TSPLPrinter");
-            return;
-        }
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình QRCode TSPL thành công");
-        call.resolve(ret);
-    }
-
     public void configZplQRCode(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
             call.reject("Chưa kết nối ZPLPrinter");
@@ -1192,7 +1225,7 @@ public class CapacitorXprinter {
 
     public void configPosImage(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("Chưa kết nối POSPrinter");
+            call.reject("[configPosImage] Chưa kết nối POSPrinter");
             return;
         }
         if (options.has("bitmap")) posImageBitmap = options.getString("bitmap");
@@ -1226,17 +1259,6 @@ public class CapacitorXprinter {
         JSObject ret = new JSObject();
         ret.put("code", 200);
         ret.put("msg", "Cấu hình image CPCL thành công");
-        call.resolve(ret);
-    }
-
-    public void configTsplImage(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
-            call.reject("Chưa kết nối TSPLPrinter");
-            return;
-        }
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình image TSPL thành công");
         call.resolve(ret);
     }
 
