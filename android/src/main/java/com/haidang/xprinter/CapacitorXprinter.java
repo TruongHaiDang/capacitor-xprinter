@@ -25,11 +25,6 @@ public class CapacitorXprinter {
     private PrinterBase currentPrinter = null;
     
     // ===== HANDSHAKE =====
-    public String echo(String value) {
-        Log.i("Echo", value);
-        return value;
-    }
-
     /**
      * Đảm bảo POSConnect đã được khởi tạo trước khi sử dụng.
      * @param context Context ứng dụng để khởi tạo
@@ -555,44 +550,6 @@ public class CapacitorXprinter {
         }
     }
 
-    public void printLabel(JSObject options, PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("[printLabel] Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        
-        String command = options.getString("command");
-        if (command == null) {
-            call.reject("Thiếu lệnh command", (Exception) null, null);
-            return;
-        }
-        
-        try {
-            if (currentPrinter instanceof CpclPrinterWrapper) {
-                ((CpclPrinterWrapper) currentPrinter).sendCommand(command);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                ((TsplPrinterWrapper) currentPrinter).sendCommand(command);
-            } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                ((ZplPrinterWrapper) currentPrinter).sendCommand(command);
-            } else {
-                call.reject("Chức năng in label không hỗ trợ cho POSPrinter", (Exception) null, null);
-                return;
-            }
-            
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "In label thành công");
-            ret.put("data", null);
-            call.resolve(ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
     // ===== PRINTER CONTROL =====
     public void cutPaper(PluginCall call) {
         if (currentPrinter == null) {
@@ -912,9 +869,13 @@ public class CapacitorXprinter {
                 posTextUpsideDown = options.getBool("upsideDown");
             }
 
-            // Optional: cập nhật luôn nếu bạn muốn apply lập tức
             PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
-            int alignment = toPosAlignment(posTextAlignment);
+            int alignment = POSConst.ALIGNMENT_LEFT;
+            switch (posTextAlignment.toLowerCase()) {
+                case "center": alignment = POSConst.ALIGNMENT_CENTER;
+                case "right": alignment = POSConst.ALIGNMENT_RIGHT;
+                default: alignment = POSConst.ALIGNMENT_LEFT;
+            }
 
             JSObject ret = new JSObject();
             ret.put("code", 200);
@@ -1098,53 +1059,6 @@ public class CapacitorXprinter {
         }
     }
 
-    public void configLabel(JSObject options, PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        try {
-            if (currentPrinter instanceof CpclPrinterWrapper) {
-                int width = options.has("width") ? options.getInteger("width") : 576;
-                int height = options.has("height") ? options.getInteger("height") : 320;
-                int quantity = options.has("quantity") ? options.getInteger("quantity") : 1;
-                ((CpclPrinterWrapper) currentPrinter).setLabel(width, height, quantity);
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                double width = options.has("width") ? options.getDouble("width") : 60.0;
-                double height = options.has("height") ? options.getDouble("height") : 40.0;
-                double gap = options.has("gap") ? options.getDouble("gap") : 2.0;
-                double offset = options.has("offset") ? options.getDouble("offset") : 0.0;
-                int direction = options.has("direction") ? options.getInteger("direction") : 0;
-                TsplPrinterWrapper tspl = (TsplPrinterWrapper) currentPrinter;
-                tspl.setSize(width, height);
-                tspl.setGap(gap, offset);
-                tspl.setDirection(direction);
-                tspl.clearBuffer();
-            } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                int length = options.has("length") ? options.getInteger("length") : 800;
-                int speed = options.has("speed") ? options.getInteger("speed") : 4;
-                ZplPrinterWrapper zpl = (ZplPrinterWrapper) currentPrinter;
-                zpl.setLabelLength(length);
-                zpl.setPrintSpeed(speed);
-                zpl.startFormat();
-            } else {
-                call.reject("Chức năng configLabel chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
-                return;
-            }
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "Cấu hình label thành công");
-            ret.put("data", null);
-            call.resolve(ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
     public void configPosBarcode(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
             call.reject("[configPosBarcode] Chưa kết nối POSPrinter");
@@ -1285,15 +1199,6 @@ public class CapacitorXprinter {
                                  + Character.digit(s.charAt(i+1), 16));
         }
         return data;
-    }
-
-    private int toPosAlignment(String alignment) {
-        if (alignment == null) return 0;
-        switch (alignment.toLowerCase()) {
-            case "center": return 1;
-            case "right": return 2;
-            default: return 0;
-        }
     }
 }
 

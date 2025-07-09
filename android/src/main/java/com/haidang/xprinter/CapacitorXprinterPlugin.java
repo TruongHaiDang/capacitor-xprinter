@@ -108,13 +108,6 @@ public class CapacitorXprinterPlugin extends Plugin {
         implementation.printImageBase64(options, call);
     }
 
-    /** In nội dung dạng label cho CPCL / TSPL / ZPL */
-    @PluginMethod
-    public void printLabel(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.printLabel(options, call);
-    }
-
     // ===== PRINTER CONTROL =====
     /** Cắt giấy (POSPrinter) */
     @PluginMethod
@@ -269,21 +262,5 @@ public class CapacitorXprinterPlugin extends Plugin {
                 implementation.configPosImage(options, call);
                 break;
         }
-    }
-
-    /** Cấu hình cho in label (CPCL/TSPL/ZPL) */
-    @PluginMethod
-    public void configLabel(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.configLabel(options, call);
-    }
-
-    // ===== UTILS =====
-    @PluginMethod
-    public void echo(PluginCall call) {
-        String value = call.getString("value");
-        JSObject ret = new JSObject();
-        ret.put("value", implementation.echo(value));
-        call.resolve(ret);
     }
 }
