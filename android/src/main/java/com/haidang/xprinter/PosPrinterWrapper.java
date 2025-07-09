@@ -45,8 +45,7 @@ public class PosPrinterWrapper implements PrinterBase {
     }
 
     public void printQRCode(String data, int moduleSize, int ecLevel, int alignment) {
-        printer.setAlignment(alignment);
-        printer.printQRCode(data, moduleSize, ecLevel);
+        printer.printQRCode(data, moduleSize, ecLevel, alignment);
         printer.feedLine();
         printer.sendData(new byte[0]);
     }

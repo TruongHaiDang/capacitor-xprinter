@@ -333,24 +333,23 @@ public class CapacitorXprinter {
             call.reject("Chưa kết nối máy in", (Exception) null, null);
             return;
         }
-        
         String data = options.getString("data");
         if (data == null) {
             call.reject("Thiếu dữ liệu QR code", (Exception) null, null);
             return;
         }
-        
         try {
             if (currentPrinter instanceof PosPrinterWrapper) {
-                int moduleSize = options.has("moduleSize") ? options.getInteger("moduleSize") : 4;
-                int ecLevel = options.has("ecLevel") ? options.getInteger("ecLevel") : 0;
-                String alignStr = options.getString("alignment", "left");
+                int moduleSize = posQrModuleSize != null ? posQrModuleSize : 4;
+                int ecLevel = posQrEcLevel != null ? posQrEcLevel : 0;
+                String alignStr = posQrAlignment != null ? posQrAlignment : "left";
                 int alignment = 0;
                 switch (alignStr.toLowerCase()) {
-                    case "center": alignment = 1; break;
-                    case "right": alignment = 2; break;
-                    default: alignment = 0; break;
+                    case "center": alignment = net.posprinter.POSConst.ALIGNMENT_CENTER; break;
+                    case "right": alignment = net.posprinter.POSConst.ALIGNMENT_RIGHT; break;
+                    default: alignment = net.posprinter.POSConst.ALIGNMENT_LEFT; break;
                 }
+                android.util.Log.d("CapacitorXprinter", "printQRCode POS: data=" + data + ", moduleSize=" + moduleSize + ", ecLevel=" + ecLevel + ", alignment=" + alignment);
                 ((PosPrinterWrapper) currentPrinter).printQRCode(data, moduleSize, ecLevel, alignment);
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
@@ -376,7 +375,6 @@ public class CapacitorXprinter {
                 int maskValue = options.has("maskValue") ? options.getInteger("maskValue") : 0;
                 ((ZplPrinterWrapper) currentPrinter).printQRCode(data, x, y, model, magnification, errorCorrection, maskValue);
             }
-            
             JSObject ret = new JSObject();
             ret.put("code", 200);
             ret.put("msg", "In QR code thành công");
@@ -897,6 +895,11 @@ public class CapacitorXprinter {
     private Integer posBarcodeHeight = null;
     private String posBarcodeAlignment = null;
     private Integer posBarcodeTextPosition = null;
+    // QRCode config POS
+    private String posQrData = null;
+    private String posQrAlignment = null;
+    private Integer posQrModuleSize = null;
+    private Integer posQrEcLevel = null;
 
     public void configPosText(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
@@ -1154,6 +1157,10 @@ public class CapacitorXprinter {
             call.reject("Chưa kết nối POSPrinter");
             return;
         }
+        if (options.has("data")) posQrData = options.getString("data");
+        if (options.has("alignment")) posQrAlignment = options.getString("alignment");
+        if (options.has("moduleSize")) posQrModuleSize = options.getInteger("moduleSize");
+        if (options.has("errorCorrectionLevel")) posQrEcLevel = options.getInteger("errorCorrectionLevel");
         JSObject ret = new JSObject();
         ret.put("code", 200);
         ret.put("msg", "Cấu hình QRCode POS thành công");

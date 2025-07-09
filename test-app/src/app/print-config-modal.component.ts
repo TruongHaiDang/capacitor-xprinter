@@ -154,14 +154,6 @@ import { CommonModule } from '@angular/common';
             <ion-input [(ngModel)]="config.data" name="data"></ion-input>
           </ion-item>
           <ion-item *ngIf="protocol === 'POS'">
-            <ion-label position="floating">Module Size</ion-label>
-            <ion-input type="number" [(ngModel)]="config.moduleSize" name="moduleSize"></ion-input>
-          </ion-item>
-          <ion-item *ngIf="protocol === 'POS'">
-            <ion-label position="floating">EC Level</ion-label>
-            <ion-input type="number" [(ngModel)]="config.ecLevel" name="ecLevel"></ion-input>
-          </ion-item>
-          <ion-item *ngIf="protocol === 'POS'">
             <ion-label position="floating">Căn lề</ion-label>
             <ion-select [(ngModel)]="config.alignment" name="alignment">
               <ion-select-option value="left">Trái</ion-select-option>
@@ -169,7 +161,19 @@ import { CommonModule } from '@angular/common';
               <ion-select-option value="right">Phải</ion-select-option>
             </ion-select>
           </ion-item>
-          <!-- Các trường cho CPCL, TSPL, ZPL tương tự, tuỳ theo options từng loại -->
+          <ion-item *ngIf="protocol === 'POS'">
+            <ion-label position="floating">Kích thước module</ion-label>
+            <ion-input type="number" [(ngModel)]="config.moduleSize" name="moduleSize"></ion-input>
+          </ion-item>
+          <ion-item *ngIf="protocol === 'POS'">
+            <ion-label position="floating">Mức sửa lỗi (EC Level)</ion-label>
+            <ion-select [(ngModel)]="config.errorCorrectionLevel" name="errorCorrectionLevel">
+              <ion-select-option [value]="0">L (7%)</ion-select-option>
+              <ion-select-option [value]="1">M (15%)</ion-select-option>
+              <ion-select-option [value]="2">Q (25%)</ion-select-option>
+              <ion-select-option [value]="3">H (30%)</ion-select-option>
+            </ion-select>
+          </ion-item>
         </ng-container>
 
         <!-- IMAGE -->

@@ -71,6 +71,9 @@ export class XprinterService {
   }
 
   async printQRCode(options: any) {
+    if (options && options.protocol === 'POS') {
+      return CapacitorXprinter.printQRCode({ data: options.data });
+    }
     return CapacitorXprinter.printQRCode(options);
   }
 

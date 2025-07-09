@@ -199,7 +199,13 @@ export class PrintTestPage implements OnInit {
     const config = await this.openPrintConfigModal('qr', defaultConfig);
     if (!config) return;
     try {
-      const res = await this.xprinter.printQRCode(config);
+      let res;
+      if (this.selectedProtocol === 'POS') {
+        await this.xprinter.configQRCode(config);
+        res = await this.xprinter.printQRCode({ data: config.data });
+      } else {
+        res = await this.xprinter.printQRCode(config);
+      }
       alert(res.msg || 'In QR code thành công');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi in QR code');
