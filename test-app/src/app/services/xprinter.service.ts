@@ -66,8 +66,8 @@ export class XprinterService {
     return CapacitorXprinter.disconnect();
   }
 
-  async printText(text: string, alignment: 'left' | 'center' | 'right' = 'left', textSize = 0, attribute = 0) {
-    return CapacitorXprinter.printText({ text, alignment, textSize, attribute });
+  async printText(text: string) {
+    return CapacitorXprinter.printText({ text });
   }
 
   async printQRCode(options: any) {
@@ -208,5 +208,12 @@ export class XprinterService {
   async printLabelTSPL(options: { sets?: number; copies?: number } = {}) {
     // Gọi plugin riêng cho TSPL, không dùng chung với POS/CPCL/ZPL
     return (window as any).Capacitor.Plugins.CapacitorXprinter.printLabelTSPL(options);
+  }
+
+  /**
+   * Gửi lệnh POS (ESC/POS) dạng text hoặc hex
+   */
+  async sendPosCommand(command: string): Promise<any> {
+    return (window as any).Capacitor.Plugins.CapacitorXprinter.sendPosCommand({ command });
   }
 }

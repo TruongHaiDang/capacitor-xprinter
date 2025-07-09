@@ -12,7 +12,7 @@
   <!-- Protocol Selection -->
   <ion-card>
     <ion-card-header>
-      <ion-card-title>Protocol Selection</ion-card-title>
+      <ion-card-title style="color: #ffffff">Protocol Selection</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <ion-segment [(ngModel)]="selectedProtocol" (ionChange)="onProtocolChange()">
@@ -69,7 +69,7 @@
         </div>
       </ion-col>
       <ion-col size="6" size-md="4">
-        <div class="print-box" (click)="onSendRawData()">
+        <div class="print-box" (click)="onSendPosCommand()">
           <ion-icon name="code-outline"></ion-icon>
           <p>Raw Data</p>
         </div>
@@ -125,75 +125,4 @@
     </ion-row>
   </ion-grid>
 
-  <!-- Config Cards -->
-  <ion-card>
-    <ion-card-header><ion-card-title>Cấu hình Label</ion-card-title></ion-card-header>
-    <ion-card-content>
-      <ion-item><ion-label position="floating">Width</ion-label><ion-input type="number" [(ngModel)]="labelConfig.width"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Height</ion-label><ion-input type="number" [(ngModel)]="labelConfig.height"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Gap</ion-label><ion-input type="number" [(ngModel)]="labelConfig.gap"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Quantity</ion-label><ion-input type="number" [(ngModel)]="labelConfig.quantity"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Length (ZPL)</ion-label><ion-input type="number" [(ngModel)]="labelConfig.length"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Speed (ZPL)</ion-label><ion-input type="number" [(ngModel)]="labelConfig.speed"></ion-input></ion-item>
-      <ion-button expand="block" (click)="onConfigLabel()">Cấu hình Label</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header><ion-card-title>Cấu hình Barcode</ion-card-title></ion-card-header>
-    <ion-card-content>
-      <ion-item><ion-label position="floating">Height</ion-label><ion-input type="number" [(ngModel)]="barcodeConfig.height"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Width</ion-label><ion-input type="number" [(ngModel)]="barcodeConfig.width"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Code Type</ion-label><ion-input [(ngModel)]="barcodeConfig.codeType"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Readable</ion-label><ion-input type="number" [(ngModel)]="barcodeConfig.readable"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Rotation</ion-label><ion-input type="number" [(ngModel)]="barcodeConfig.rotation"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Narrow</ion-label><ion-input type="number" [(ngModel)]="barcodeConfig.narrow"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Wide</ion-label><ion-input type="number" [(ngModel)]="barcodeConfig.wide"></ion-input></ion-item>
-      <ion-button expand="block" (click)="onConfigBarcode()">Cấu hình Barcode</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header><ion-card-title>Cấu hình QRCode</ion-card-title></ion-card-header>
-    <ion-card-content>
-      <ion-item><ion-label position="floating">Size</ion-label><ion-input type="number" [(ngModel)]="qrcodeConfig.size"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Model</ion-label><ion-input type="number" [(ngModel)]="qrcodeConfig.model"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Unit Width</ion-label><ion-input type="number" [(ngModel)]="qrcodeConfig.unitWidth"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">EC Level</ion-label><ion-input type="number" [(ngModel)]="qrcodeConfig.ecLevel"></ion-input></ion-item>
-      <ion-button expand="block" (click)="onConfigQRCode()">Cấu hình QRCode</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header><ion-card-title>Cấu hình Image</ion-card-title></ion-card-header>
-    <ion-card-content>
-      <ion-item><ion-label position="floating">Mode</ion-label><ion-input type="number" [(ngModel)]="imageConfig.mode"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Width</ion-label><ion-input type="number" [(ngModel)]="imageConfig.width"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Height</ion-label><ion-input type="number" [(ngModel)]="imageConfig.height"></ion-input></ion-item>
-      <ion-button expand="block" (click)="onConfigImage()">Cấu hình Image</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header><ion-card-title>Cấu hình Text</ion-card-title></ion-card-header>
-    <ion-card-content>
-      <ion-item><ion-label position="floating">Font</ion-label><ion-input type="number" [(ngModel)]="textConfig.font"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Size</ion-label><ion-input type="number" [(ngModel)]="textConfig.size"></ion-input></ion-item>
-      <ion-item><ion-label position="floating">Rotation</ion-label><ion-input type="number" [(ngModel)]="textConfig.rotation"></ion-input></ion-item>
-      <ion-button expand="block" (click)="onConfigText()">Cấu hình Text</ion-button>
-    </ion-card-content>
-  </ion-card>
-
-  <ion-card>
-    <ion-card-header>
-      <ion-card-title>Gửi lệnh tuỳ ý (ZPL/CPCL/TSPL...)</ion-card-title>
-    </ion-card-header>
-    <ion-card-content>
-      <ion-item>
-        <ion-label position="floating">Lệnh máy in</ion-label>
-        <ion-textarea autoGrow="true" [(ngModel)]="customCommand"></ion-textarea>
-      </ion-item>
-      <ion-button expand="block" (click)="onSendCommand()">Gửi lệnh</ion-button>
-    </ion-card-content>
-  </ion-card>
 </ion-content>

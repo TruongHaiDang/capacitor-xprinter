@@ -19,10 +19,13 @@ import {
   IonSegmentButton,
   IonLabel,
   IonIcon,
+  ModalController,
   IonItem,
   IonInput,
-  IonButton,
-  IonTextarea
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
+  IonButton
 } from '@ionic/angular/standalone';
 import { XprinterService } from '../services/xprinter.service';
 import { addIcons } from 'ionicons';
@@ -41,6 +44,7 @@ import {
   refreshOutline,
 } from 'ionicons/icons';
 import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
+import { PrintConfigModalComponent } from '../print-config-modal.component';
 
 @Component({
   selector: 'app-print-test',
@@ -67,11 +71,8 @@ import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera
     IonSegmentButton,
     IonLabel,
     IonIcon,
-    IonItem,
-    IonInput,
-    IonButton,
-    IonTextarea
   ],
+  // providers: [ModalController] // Không cần thiết vì ModalController là service gốc của Ionic
 })
 export class PrintTestPage implements OnInit {
   selectedProtocol: string = 'POS';
@@ -79,10 +80,29 @@ export class PrintTestPage implements OnInit {
   barcodeConfig: { height?: number; width?: number; codeType?: string; readable?: number; rotation?: number; narrow?: number; wide?: number } = { height: 40, width: 2 };
   qrcodeConfig: { size?: number; model?: number; unitWidth?: number; ecLevel?: number } = { size: 6 };
   imageConfig: { mode?: number; width?: number; height?: number } = { mode: 0 };
-  textConfig: { font?: number; size?: number; rotation?: number } = { font: 0, size: 0 };
+  textConfig: {
+    alignment: 'left' | 'center' | 'right';
+    attribute: number;
+    textSize: number;
+    font: number;
+    lineSpacing: number;
+    codePage: number;
+    charRightSpace: number;
+    upsideDown: boolean;
+  } = {
+    alignment: 'left',
+    attribute: 0,
+    textSize: 0,
+    font: 0,
+    lineSpacing: 30,
+    codePage: 0,
+    charRightSpace: 0,
+    upsideDown: false
+  };
   customCommand: string = '';
+  // customPosCommand: string = '';
 
-  constructor(private xprinter: XprinterService) {
+  constructor(private xprinter: XprinterService, private modalCtrl: ModalController) {
     addIcons({
       textOutline,
       qrCodeOutline,
@@ -111,11 +131,63 @@ export class PrintTestPage implements OnInit {
     }
   }
 
+  async openPrintConfigModal(type: string, defaultConfig: any) {
+    const modal = await this.modalCtrl.create({
+      component: PrintConfigModalComponent,
+      componentProps: { type, protocol: this.selectedProtocol, config: { ...defaultConfig } }
+    });
+    await modal.present();
+    const { data } = await modal.onDidDismiss();
+    return data;
+  }
+
+  getDefaultConfig(type: string, protocol: string) {
+    if (type === 'text') {
+      if (protocol === 'POS') return { text: 'Hello XPrinter', alignment: 'left', textSize: 0 };
+      if (protocol === 'CPCL') return { text: 'Hello XPrinter', x: 0, y: 0, font: 0, rotation: 0 };
+      if (protocol === 'TSPL') return { text: 'Hello XPrinter', x: 0, y: 0, font: '0', rotation: 0, xScale: 1, yScale: 1 };
+      if (protocol === 'ZPL') return { text: 'Hello XPrinter', x: 0, y: 0, font: 'A', orientation: 'N', height: 30, width: 30 };
+    }
+    if (type === 'barcode') {
+      if (protocol === 'POS') return { data: '0123456789012', codeType: 67, width: 3, height: 120, alignment: 'center', textPosition: 2 };
+      if (protocol === 'CPCL') return { data: '1234567890', x: 50, y: 50, codeType: '128', height: 32, readable: 1 };
+      if (protocol === 'TSPL') return { data: '1234567890', x: 50, y: 50, codeType: '128', height: 40, readable: 1, rotation: 0, narrow: 2, wide: 2 };
+      if (protocol === 'ZPL') return { data: '1234567890', x: 50, y: 50, codeType: '^BC', orientation: 'N', height: 100, printInterpretationLine: 'Y', printInterpretationLineAbove: 'N', checkDigit: 'N' };
+    }
+    if (type === 'qr') {
+      if (protocol === 'POS') return { data: 'https://xprinter.net', moduleSize: 4, ecLevel: 0, alignment: 'center' };
+      if (protocol === 'CPCL') return { data: 'https://xprinter.net', x: 50, y: 50, model: 2, unitWidth: 6 };
+      if (protocol === 'TSPL') return { data: 'https://xprinter.net', x: 50, y: 50, ecLevel: 'M', cellWidth: 4, mode: 'A', rotation: 0, model: 'M2' };
+      if (protocol === 'ZPL') return { data: 'https://xprinter.net', x: 50, y: 50, model: 2, magnification: 3, errorCorrection: 'M', maskValue: 0 };
+    }
+    if (type === 'image') {
+      if (protocol === 'POS') return { imagePath: '', width: 200, alignment: 'center', base64: '' };
+      if (protocol === 'CPCL') return { imagePath: '', x: 50, y: 50, mode: 0, base64: '' };
+      if (protocol === 'TSPL') return { imagePath: '', x: 50, y: 50, mode: 'OVERWRITE', base64: '' };
+      if (protocol === 'ZPL') return { imagePath: '', x: 50, y: 50, width: 200, height: 200, base64: '' };
+    }
+    return {};
+  }
+
   async onPrintText() {
-    const text = prompt('Nhập nội dung cần in', 'Hello XPrinter');
-    if (!text) return;
+    const defaultConfig = this.getDefaultConfig('text', this.selectedProtocol);
+    const config = await this.openPrintConfigModal('text', defaultConfig);
+    if (!config) return;
     try {
-      const res = await this.xprinter.printText(text);
+      // Gọi configText trước với các trường cấu hình
+      await this.xprinter.configText({
+        alignment: config.alignment,
+        attribute: config.attribute,
+        textSize: config.textSize,
+        font: config.font,
+        lineSpacing: config.lineSpacing,
+        codePage: config.codePage,
+        charRightSpace: config.charRightSpace,
+        upsideDown: config.upsideDown,
+        language: this.selectedProtocol
+      });
+      // Sau đó chỉ truyền text vào printText
+      const res = await this.xprinter.printText(config.text);
       alert(res.msg || 'In thành công');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi in');
@@ -123,38 +195,11 @@ export class PrintTestPage implements OnInit {
   }
 
   async onPrintQRCode() {
-    const data = prompt('Nhập dữ liệu QR code', 'https://xprinter.net');
-    if (!data) return;
+    const defaultConfig = this.getDefaultConfig('qr', this.selectedProtocol);
+    const config = await this.openPrintConfigModal('qr', defaultConfig);
+    if (!config) return;
     try {
-      const options: any = { data };
-
-      if (this.selectedProtocol === 'POS') {
-        options.moduleSize = 4;
-        options.ecLevel = 0;
-        options.alignment = 'center';
-      } else if (this.selectedProtocol === 'CPCL') {
-        options.x = 50;
-        options.y = 50;
-        options.model = 2;
-        options.unitWidth = 6;
-      } else if (this.selectedProtocol === 'TSPL') {
-        options.x = 50;
-        options.y = 50;
-        options.ecLevel = 'M';
-        options.cellWidth = 4;
-        options.mode = 'A';
-        options.rotation = 0;
-        options.model = 'M2';
-      } else if (this.selectedProtocol === 'ZPL') {
-        options.x = 50;
-        options.y = 50;
-        options.model = 2;
-        options.magnification = 3;
-        options.errorCorrection = 'M';
-        options.maskValue = 0;
-      }
-
-      const res = await this.xprinter.printQRCode(options);
+      const res = await this.xprinter.printQRCode(config);
       alert(res.msg || 'In QR code thành công');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi in QR code');
@@ -162,50 +207,17 @@ export class PrintTestPage implements OnInit {
   }
 
   async onPrintBarcode() {
-    const data = prompt('Nhập dữ liệu barcode', '1234567890');
-    if (!data) return;
+    const defaultConfig = this.getDefaultConfig('barcode', this.selectedProtocol);
+    const config = await this.openPrintConfigModal('barcode', defaultConfig);
+    if (!config) return;
     try {
-      const options: any = { data };
-
+      let res;
       if (this.selectedProtocol === 'POS') {
-        // options.codeType = 73; // CODE128
-        // options.width = 2;
-        // options.height = 162;
-        // options.alignment = 'center';
-        // options.textPosition = 2;
-        options.data = '0123456789012',   // 13 ký tự EAN-13 (checksum tự tính)
-        options.codeType = 67,            // POSConst.BCS_EAN13
-        options.width = 3,
-        options.height = 120,
-        options.alignment = 'center',
-        options.textPosition = 2          // HRI dưới
-      } else if (this.selectedProtocol === 'CPCL') {
-        options.x = 50;
-        options.y = 50;
-        options.codeType = '128';
-        options.height = 32;
-        options.readable = 1;
-      } else if (this.selectedProtocol === 'TSPL') {
-        options.x = 50;
-        options.y = 50;
-        options.codeType = '128';
-        options.height = 40;
-        options.readable = 1;
-        options.rotation = 0;
-        options.narrow = 2;
-        options.wide = 2;
-      } else if (this.selectedProtocol === 'ZPL') {
-        options.x = 50;
-        options.y = 50;
-        options.codeType = '^BC';
-        options.orientation = 'N';
-        options.height = 100;
-        options.printInterpretationLine = 'Y';
-        options.printInterpretationLineAbove = 'N';
-        options.checkDigit = 'N';
+        await this.xprinter.configBarcode(config);
+        res = await this.xprinter.printBarcode({ data: config.data });
+      } else {
+        res = await this.xprinter.printBarcode(config);
       }
-
-      const res = await this.xprinter.printBarcode(options);
       alert(res.msg || 'In barcode thành công');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi in barcode');
@@ -284,17 +296,11 @@ export class PrintTestPage implements OnInit {
         alert('Không lấy được file path thực từ ảnh!\nChỉ có thể in bằng base64.');
         return;
       }
-      const options: any = { imagePath: filePath };
-      if (this.selectedProtocol === 'CPCL') {
-        options.x = 50; options.y = 50; options.mode = 0;
-      } else if (this.selectedProtocol === 'TSPL') {
-        options.x = 50; options.y = 50; options.mode = 'OVERWRITE';
-      } else if (this.selectedProtocol === 'ZPL') {
-        options.x = 50; options.y = 50; options.width = 200; options.height = 200;
-      } else if (this.selectedProtocol === 'POS') {
-        options.width = 200; options.alignment = 'center';
-      }
-      const res = await this.xprinter.printImageFromPath(options);
+      const defaultConfig = this.getDefaultConfig('image', this.selectedProtocol);
+      defaultConfig.imagePath = filePath;
+      const config = await this.openPrintConfigModal('image', defaultConfig);
+      if (!config) return;
+      const res = await this.xprinter.printImageFromPath(config);
       alert(res.msg || 'In ảnh từ thư viện (path) thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi chọn/in ảnh từ thư viện');
@@ -317,17 +323,11 @@ export class PrintTestPage implements OnInit {
         alert('Không lấy được base64 ảnh!');
         return;
       }
-      const options: any = { base64 };
-      if (this.selectedProtocol === 'CPCL') {
-        options.x = 50; options.y = 50; options.mode = 0;
-      } else if (this.selectedProtocol === 'TSPL') {
-        options.x = 50; options.y = 50; options.mode = 'OVERWRITE';
-      } else if (this.selectedProtocol === 'ZPL') {
-        options.x = 50; options.y = 50; options.width = 200; options.height = 200;
-      } else if (this.selectedProtocol === 'POS') {
-        options.width = 200; options.alignment = 'center';
-      }
-      const res = await this.xprinter.printImageBase64(options);
+      const defaultConfig = this.getDefaultConfig('image', this.selectedProtocol);
+      defaultConfig.base64 = base64;
+      const config = await this.openPrintConfigModal('image', defaultConfig);
+      if (!config) return;
+      const res = await this.xprinter.printImageBase64(config);
       alert(res.msg || 'In ảnh chụp (base64) thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi chụp/in ảnh');
@@ -377,7 +377,18 @@ export class PrintTestPage implements OnInit {
 
   async onConfigText() {
     try {
-      const res = await this.xprinter.configText(this.textConfig);
+      const config = {
+        alignment: this.textConfig.alignment,
+        attribute: this.textConfig.attribute,
+        textSize: this.textConfig.textSize,
+        font: this.textConfig.font,
+        lineSpacing: this.textConfig.lineSpacing,
+        codePage: this.textConfig.codePage,
+        charRightSpace: this.textConfig.charRightSpace,
+        upsideDown: this.textConfig.upsideDown,
+        language: this.selectedProtocol
+      };
+      const res = await this.xprinter.configText(config);
       alert(res.msg || 'Cấu hình text thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Lỗi cấu hình text');
@@ -394,6 +405,19 @@ export class PrintTestPage implements OnInit {
       alert(res?.msg || 'Gửi lệnh thành công!');
     } catch (err: any) {
       alert(err?.msg || err?.message || 'Gửi lệnh thất bại!');
+    }
+  }
+
+  async onSendPosCommand(): Promise<void> {
+    const command = prompt('Nhập lệnh ESC/POS (hex hoặc text)', '1B4000');
+    if (!command || !command.trim()) {
+      return;
+    }
+    try {
+      const res = await this.xprinter.sendPosCommand(command.trim());
+      alert(res?.msg || 'Gửi lệnh POS thành công!');
+    } catch (err: any) {
+      alert(err?.msg || err?.message || 'Gửi lệnh POS thất bại!');
     }
   }
 }

@@ -1,5 +1,6 @@
 package com.haidang.xprinter;
 
+import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -64,19 +65,6 @@ public class CapacitorXprinterPlugin extends Plugin {
         call.resolve(ret);
     }
 
-    /**
-     * Lấy danh sách cổng Serial (COM).
-     * Trả về mảng string 'ports'.
-     */
-    @PluginMethod
-    public void listSerialPorts(PluginCall call) {
-        java.util.List<String> ports = implementation.listSerialPorts(getContext());
-        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray(ports);
-        JSObject ret = new JSObject();
-        ret.put("ports", arr);
-        call.resolve(ret);
-    }
-
     // ===== PRINT =====
     /** In văn bản (POS Printer) */
     @PluginMethod
@@ -84,36 +72,42 @@ public class CapacitorXprinterPlugin extends Plugin {
         JSObject options = call.getData();
         implementation.printText(options, call);
     }
+
     /** In văn bản với encoding cụ thể */
     @PluginMethod
     public void printEncodedText(PluginCall call) {
         JSObject options = call.getData();
         implementation.printEncodedText(options, call);
     }
+
     /** In mã QR */
     @PluginMethod
     public void printQRCode(PluginCall call) {
         JSObject options = call.getData();
         implementation.printQRCode(options, call);
     }
+
     /** In mã vạch 1D */
     @PluginMethod
     public void printBarcode(PluginCall call) {
         JSObject options = call.getData();
         implementation.printBarcode(options, call);
     }
+
     /** In hình ảnh từ đường dẫn */
     @PluginMethod
     public void printImageFromPath(PluginCall call) {
         JSObject options = call.getData();
         implementation.printImageFromPath(options, getContext(), call);
     }
+
     /** In hình ảnh base64 */
     @PluginMethod
     public void printImageBase64(PluginCall call) {
         JSObject options = call.getData();
         implementation.printImageBase64(options, call);
     }
+
     /** In nội dung dạng label cho CPCL / TSPL / ZPL */
     @PluginMethod
     public void printLabel(PluginCall call) {
@@ -127,22 +121,26 @@ public class CapacitorXprinterPlugin extends Plugin {
     public void cutPaper(PluginCall call) {
         implementation.cutPaper(call);
     }
+
     /** Mở két tiền (POSPrinter) */
     @PluginMethod
     public void openCashDrawer(PluginCall call) {
         JSObject options = call.getData();
         implementation.openCashDrawer(options, call);
     }
+
     /** Thiết lập lại máy in */
     @PluginMethod
     public void resetPrinter(PluginCall call) {
         implementation.resetPrinter(call);
     }
+
     /** Thực hiện in tự test của máy in (self-test) */
     @PluginMethod
     public void selfTest(PluginCall call) {
         implementation.selfTest(call);
     }
+
     /** Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) */
     @PluginMethod
     public void setProtocol(PluginCall call) {
@@ -156,22 +154,32 @@ public class CapacitorXprinterPlugin extends Plugin {
     public void getPrinterStatus(PluginCall call) {
         implementation.getPrinterStatus(call);
     }
+
     /** Đọc dữ liệu phản hồi từ máy in (nếu có) */
     @PluginMethod
     public void readData(PluginCall call) {
         implementation.readData(call);
     }
+
     /** Gửi dữ liệu tùy ý (raw byte) */
     @PluginMethod
     public void sendRawData(PluginCall call) {
         JSObject options = call.getData();
         implementation.sendRawData(options, call);
     }
+
     /** Gửi nhiều lệnh liên tiếp (batch command mode) */
     @PluginMethod
     public void sendBatchCommands(PluginCall call) {
         JSObject options = call.getData();
         implementation.sendBatchCommands(options, call);
+    }
+
+    /** Gửi lệnh POS (ESC/POS) dạng text hoặc hex */
+    @PluginMethod
+    public void sendPosCommand(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.sendPosCommand(options, call);
     }
 
     // ===== CONFIG =====
@@ -196,24 +204,73 @@ public class CapacitorXprinterPlugin extends Plugin {
                 break;
         }
     }
+
     /** Cấu hình cho in barcode */
     @PluginMethod
     public void configBarcode(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configBarcode(options, call);
+        String language = options.getString("language", "POS"); // mặc định POS nếu không truyền
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclBarcode(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplBarcode(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplBarcode(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosBarcode(options, call);
+                break;
+        }
     }
+
     /** Cấu hình cho in QRCode */
     @PluginMethod
     public void configQRCode(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configQRCode(options, call);
+        String language = options.getString("language", "POS");
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclQRCode(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplQRCode(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplQRCode(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosQRCode(options, call);
+                break;
+        }
     }
+
     /** Cấu hình cho in hình ảnh */
     @PluginMethod
     public void configImage(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configImage(options, call);
+        String language = options.getString("language", "POS");
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclImage(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplImage(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplImage(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosImage(options, call);
+                break;
+        }
     }
+
     /** Cấu hình cho in label (CPCL/TSPL/ZPL) */
     @PluginMethod
     public void configLabel(PluginCall call) {
@@ -230,4 +287,3 @@ public class CapacitorXprinterPlugin extends Plugin {
         call.resolve(ret);
     }
 }
-
