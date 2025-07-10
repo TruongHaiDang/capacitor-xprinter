@@ -1,5 +1,6 @@
 package com.haidang.xprinter;
 
+import android.util.Log;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -11,15 +12,7 @@ public class CapacitorXprinterPlugin extends Plugin {
 
     private CapacitorXprinter implementation = new CapacitorXprinter();
 
-    @PluginMethod
-    public void echo(PluginCall call) {
-        String value = call.getString("value");
-
-        JSObject ret = new JSObject();
-        ret.put("value", implementation.echo(value));
-        call.resolve(ret);
-    }
-
+    // ===== HANDSHAKE =====
     /**
      * Kết nối tới thiết bị máy in dựa trên loại thiết bị và các tham số truyền vào.
      * Trả về kết quả bất đồng bộ qua IConnectListener.
@@ -38,12 +31,23 @@ public class CapacitorXprinterPlugin extends Plugin {
     @PluginMethod
     public void disconnect(PluginCall call) {
         HandshakeResponse response = implementation.disconnect();
-
         JSObject ret = new JSObject();
         ret.put("code", response.code);
         ret.put("msg", response.msg);
         ret.put("data", response.data);
+        call.resolve(ret);
+    }
 
+    /**
+     * Kiểm tra trạng thái kết nối máy in (đã kết nối hay chưa)
+     */
+    @PluginMethod
+    public void isConnected(PluginCall call) {
+        HandshakeResponse response = implementation.isConnected();
+        JSObject ret = new JSObject();
+        ret.put("code", response.code);
+        ret.put("msg", response.msg);
+        ret.put("data", response.data);
         call.resolve(ret);
     }
 
@@ -55,249 +59,208 @@ public class CapacitorXprinterPlugin extends Plugin {
     public void listAvailablePorts(PluginCall call) {
         String type = call.getString("type");
         java.util.List<String> ports = implementation.listAvailablePorts(type, getContext());
-
         com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray(ports);
         JSObject ret = new JSObject();
         ret.put("ports", arr);
         call.resolve(ret);
     }
 
-    /**
-     * Trả về các hằng số trạng thái của POSConnect.
-     */
-    @PluginMethod
-    public void getStatusConstants(PluginCall call) {
-        JSObject constants = implementation.getStatusConstants();
-        call.resolve(constants);
-    }
-
-    /**
-     * Lấy danh sách thiết bị USB chi tiết (UsbDevice).
-     * Trả về mảng object 'devices' với thông tin cơ bản của từng thiết bị.
-     */
-    @PluginMethod
-    public void listUsbDevices(PluginCall call) {
-        java.util.List<android.hardware.usb.UsbDevice> devices = implementation.listUsbDevices(getContext());
-        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray();
-        for (android.hardware.usb.UsbDevice dev : devices) {
-            JSObject obj = new JSObject();
-            obj.put("deviceId", dev.getDeviceId());
-            obj.put("vendorId", dev.getVendorId());
-            obj.put("productId", dev.getProductId());
-            obj.put("deviceName", dev.getDeviceName());
-            arr.put(obj);
-        }
-        JSObject ret = new JSObject();
-        ret.put("devices", arr);
-        call.resolve(ret);
-    }
-
-    /**
-     * Lấy danh sách cổng Serial (COM).
-     * Trả về mảng string 'ports'.
-     */
-    @PluginMethod
-    public void listSerialPorts(PluginCall call) {
-        java.util.List<String> ports = implementation.listSerialPorts(getContext());
-        com.getcapacitor.JSArray arr = new com.getcapacitor.JSArray(ports);
-        JSObject ret = new JSObject();
-        ret.put("ports", arr);
-        call.resolve(ret);
-    }
-
-    /**
-     * Kết nối tới máy in qua địa chỉ MAC (LAN/Ethernet).
-     * Truyền vào chuỗi 'mac'.
-     */
-    @PluginMethod
-    public void connectByMac(PluginCall call) {
-        String mac = call.getString("mac");
-        implementation.connectByMac(mac, getContext(), call);
-    }
-
-    /**
-     * In văn bản (POS Printer)
-     */
+    // ===== PRINT =====
+    /** In văn bản (POS Printer) */
     @PluginMethod
     public void printText(PluginCall call) {
         JSObject options = call.getData();
         implementation.printText(options, call);
     }
 
-    /**
-     * In mã QR
-     */
-    @PluginMethod
-    public void printQRCode(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.printQRCode(options, call);
-    }
-
-    /**
-     * In mã vạch 1D
-     */
-    @PluginMethod
-    public void printBarcode(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.printBarcode(options, call);
-    }
-
-    /**
-     * In hình ảnh từ đường dẫn
-     */
-    @PluginMethod
-    public void printImageFromPath(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.printImageFromPath(options, getContext(), call);
-    }
-
-    /**
-     * In hình ảnh base64
-     */
-    @PluginMethod
-    public void printImageBase64(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.printImageBase64(options, call);
-    }
-
-    /**
-     * Cắt giấy (POSPrinter)
-     */
-    @PluginMethod
-    public void cutPaper(PluginCall call) {
-        implementation.cutPaper(call);
-    }
-
-    /**
-     * Mở két tiền (POSPrinter)
-     */
-    @PluginMethod
-    public void openCashDrawer(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.openCashDrawer(options, call);
-    }
-
-    /**
-     * Kiểm tra trạng thái máy in
-     */
-    @PluginMethod
-    public void getPrinterStatus(PluginCall call) {
-        implementation.getPrinterStatus(call);
-    }
-
-    /**
-     * Đọc dữ liệu phản hồi từ máy in (nếu có)
-     */
-    @PluginMethod
-    public void readData(PluginCall call) {
-        implementation.readData(call);
-    }
-
-    /**
-     * Gửi dữ liệu tùy ý (raw byte)
-     */
-    @PluginMethod
-    public void sendRawData(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.sendRawData(options, call);
-    }
-
-    /**
-     * In nội dung dạng label cho CPCL / TSPL / ZPL
-     */
-    @PluginMethod
-    public void printLabel(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.printLabel(options, call);
-    }
-
-    /**
-     * Thiết lập lại máy in
-     */
-    @PluginMethod
-    public void resetPrinter(PluginCall call) {
-        implementation.resetPrinter(call);
-    }
-
-    /**
-     * Thực hiện in tự test của máy in (self-test)
-     */
-    @PluginMethod
-    public void selfTest(PluginCall call) {
-        implementation.selfTest(call);
-    }
-
-    /**
-     * In văn bản với encoding cụ thể
-     */
+    /** In văn bản với encoding cụ thể */
     @PluginMethod
     public void printEncodedText(PluginCall call) {
         JSObject options = call.getData();
         implementation.printEncodedText(options, call);
     }
 
-    /**
-     * Gửi nhiều lệnh liên tiếp (batch command mode)
-     */
+    /** In mã QR */
     @PluginMethod
-    public void sendBatchCommands(PluginCall call) {
+    public void printQRCode(PluginCall call) {
         JSObject options = call.getData();
-        implementation.sendBatchCommands(options, call);
+        implementation.printQRCode(options, call);
     }
 
-    /**
-     * Thiết lập lại protocol (POS / CPCL / TSPL / ZPL)
-     */
+    /** In mã vạch 1D */
+    @PluginMethod
+    public void printBarcode(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printBarcode(options, call);
+    }
+
+    /** In hình ảnh từ đường dẫn */
+    @PluginMethod
+    public void printImageFromPath(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printImageFromPath(options, getContext(), call);
+    }
+
+    /** In hình ảnh base64 */
+    @PluginMethod
+    public void printImageBase64(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.printImageBase64(options, call);
+    }
+
+    // ===== PRINTER CONTROL =====
+    /** Cắt giấy (POSPrinter) */
+    @PluginMethod
+    public void cutPaper(PluginCall call) {
+        implementation.cutPaper(call);
+    }
+
+    /** Mở két tiền (POSPrinter) */
+    @PluginMethod
+    public void openCashDrawer(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.openCashDrawer(options, call);
+    }
+
+    /** Thiết lập lại máy in */
+    @PluginMethod
+    public void resetPrinter(PluginCall call) {
+        implementation.resetPrinter(call);
+    }
+
+    /** Thực hiện in tự test của máy in (self-test) */
+    @PluginMethod
+    public void selfTest(PluginCall call) {
+        implementation.selfTest(call);
+    }
+
+    /** Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) */
     @PluginMethod
     public void setProtocol(PluginCall call) {
         JSObject options = call.getData();
         implementation.setProtocol(options, call);
     }
 
-    /**
-     * Cấu hình cho in text
-     */
+    // ===== STATUS & DATA =====
+    /** Kiểm tra trạng thái máy in */
+    @PluginMethod
+    public void getPrinterStatus(PluginCall call) {
+        implementation.getPrinterStatus(call);
+    }
+
+    /** Đọc dữ liệu phản hồi từ máy in (nếu có) */
+    @PluginMethod
+    public void readData(PluginCall call) {
+        implementation.readData(call);
+    }
+
+    /** Gửi dữ liệu tùy ý (raw byte) */
+    @PluginMethod
+    public void sendRawData(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.sendRawData(options, call);
+    }
+
+    /** Gửi nhiều lệnh liên tiếp (batch command mode) */
+    @PluginMethod
+    public void sendBatchCommands(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.sendBatchCommands(options, call);
+    }
+
+    /** Gửi lệnh POS (ESC/POS) dạng text hoặc hex */
+    @PluginMethod
+    public void sendPosCommand(PluginCall call) {
+        JSObject options = call.getData();
+        implementation.sendPosCommand(options, call);
+    }
+
+    // ===== CONFIG =====
+    /** Cấu hình cho in text */
     @PluginMethod
     public void configText(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configText(options, call);
+        String language = options.getString("language", "POS"); // mặc định POS nếu không truyền
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclText(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplText(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplText(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosText(options, call);
+                break;
+        }
     }
 
-    /**
-     * Cấu hình cho in barcode
-     */
+    /** Cấu hình cho in barcode */
     @PluginMethod
     public void configBarcode(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configBarcode(options, call);
+        String language = options.getString("language", "POS"); // mặc định POS nếu không truyền
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclBarcode(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplBarcode(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplBarcode(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosBarcode(options, call);
+                break;
+        }
     }
 
-    /**
-     * Cấu hình cho in QRCode
-     */
+    /** Cấu hình cho in QRCode */
     @PluginMethod
     public void configQRCode(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configQRCode(options, call);
+        String language = options.getString("language", "POS");
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclQRCode(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplQRCode(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplQRCode(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosQRCode(options, call);
+                break;
+        }
     }
 
-    /**
-     * Cấu hình cho in hình ảnh
-     */
+    /** Cấu hình cho in hình ảnh */
     @PluginMethod
     public void configImage(PluginCall call) {
         JSObject options = call.getData();
-        implementation.configImage(options, call);
+        String language = options.getString("language", "POS");
+        switch (language.toUpperCase()) {
+            case "CPCL":
+                implementation.configCpclImage(options, call);
+                break;
+            case "TSPL":
+                implementation.configTsplImage(options, call);
+                break;
+            case "ZPL":
+                implementation.configZplImage(options, call);
+                break;
+            case "POS":
+            default:
+                implementation.configPosImage(options, call);
+                break;
+        }
     }
-
-    /**
-     * Cấu hình cho in label (CPCL/TSPL/ZPL)
-     */
-    @PluginMethod
-    public void configLabel(PluginCall call) {
-        JSObject options = call.getData();
-        implementation.configLabel(options, call);
-    }
-
 }
-

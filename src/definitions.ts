@@ -1,8 +1,7 @@
 import { ConnectOptions, HandshakeResponse } from './models';
 
 export interface CapacitorXprinterPlugin {
-  echo(options: { value: string }): Promise<{ value: string }>;
-
+  // ===== HANDSHAKE =====
   /**
    * Kết nối đến máy in
    * @param options Chọn loại kết nối và các thông số tương ứng với loại kết kết
@@ -15,6 +14,17 @@ export interface CapacitorXprinterPlugin {
   disconnect(): Promise<HandshakeResponse>;
 
   /**
+   * Kiểm tra trạng thái kết nối máy in (đã kết nối hay chưa)
+   */
+  isConnected(): Promise<{ connected: boolean }>;
+
+  /**
+   * Danh sách cổng khả dụng (USB/Bluetooth/Serial)
+   */
+  listAvailablePorts(options: { type: 'USB' | 'BLUETOOTH' | 'SERIAL' }): Promise<{ ports: string[] }>;
+
+  // ===== PRINT =====
+  /**
    * In văn bản đơn giản (chỉ hỗ trợ POSPrinter)
    */
   printText(options: {
@@ -23,6 +33,11 @@ export interface CapacitorXprinterPlugin {
     textSize?: number;
     attribute?: number;
   }): Promise<HandshakeResponse>;
+
+  /**
+   * In văn bản với encoding cụ thể (GBK, UTF-8, Shift-JIS,...)
+   */
+  printEncodedText(options: { text: string; encoding: 'gbk' | 'utf-8' | 'shift-jis' }): Promise<HandshakeResponse>;
 
   /**
    * In mã QR
@@ -56,31 +71,6 @@ export interface CapacitorXprinterPlugin {
   }): Promise<HandshakeResponse>;
 
   /**
-   * Cắt giấy (POSPrinter)
-   */
-  cutPaper(): Promise<HandshakeResponse>;
-
-  /**
-   * Mở két tiền (POSPrinter)
-   */
-  openCashDrawer(options?: { pinNum?: number; onTime?: number; offTime?: number }): Promise<HandshakeResponse>;
-
-  /**
-   * Kiểm tra trạng thái máy in
-   */
-  getPrinterStatus(): Promise<HandshakeResponse>;
-
-  /**
-   * Đọc dữ liệu phản hồi từ máy in (nếu có)
-   */
-  readData(): Promise<HandshakeResponse>;
-
-  /**
-   * Gửi dữ liệu tùy ý (raw byte) – nâng cao
-   */
-  sendRawData(options: { hex: string }): Promise<HandshakeResponse>;
-
-  /**
    * In hình ảnh base64 – phù hợp khi không có file path
    */
   printImageBase64(options: {
@@ -97,6 +87,17 @@ export interface CapacitorXprinterPlugin {
     command: string; // CPCL/TSPL/ZPL command
   }): Promise<HandshakeResponse>;
 
+  // ===== PRINTER CONTROL =====
+  /**
+   * Cắt giấy (POSPrinter)
+   */
+  cutPaper(): Promise<HandshakeResponse>;
+
+  /**
+   * Mở két tiền (POSPrinter)
+   */
+  openCashDrawer(options?: { pinNum?: number; onTime?: number; offTime?: number }): Promise<HandshakeResponse>;
+
   /**
    * Thiết lập lại máy in
    */
@@ -108,14 +109,25 @@ export interface CapacitorXprinterPlugin {
   selfTest(): Promise<HandshakeResponse>;
 
   /**
-   * Danh sách cổng khả dụng (USB/Bluetooth/Serial)
+   * Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnect lại
    */
-  listAvailablePorts(options: { type: 'USB' | 'BLUETOOTH' | 'SERIAL' }): Promise<{ ports: string[] }>;
+  setProtocol(options: { protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL' }): Promise<HandshakeResponse>;
+
+  // ===== STATUS & DATA =====
+  /**
+   * Kiểm tra trạng thái máy in
+   */
+  getPrinterStatus(): Promise<HandshakeResponse>;
 
   /**
-   * In văn bản với encoding cụ thể (GBK, UTF-8, Shift-JIS,...)
+   * Đọc dữ liệu phản hồi từ máy in (nếu có)
    */
-  printEncodedText(options: { text: string; encoding: 'gbk' | 'utf-8' | 'shift-jis' }): Promise<HandshakeResponse>;
+  readData(): Promise<HandshakeResponse>;
+
+  /**
+   * Gửi dữ liệu tùy ý (raw byte) – nâng cao
+   */
+  sendRawData(options: { hex: string }): Promise<HandshakeResponse>;
 
   /**
    * Gửi nhiều lệnh liên tiếp (batch command mode)
@@ -125,16 +137,7 @@ export interface CapacitorXprinterPlugin {
     delayBetween?: number; // delay giữa các lệnh (ms)
   }): Promise<HandshakeResponse>;
 
-  /**
-   * Kiểm tra kết nối hiện tại có đang hoạt động không
-   */
-  isConnected(): Promise<{ connected: boolean }>;
-
-  /**
-   * Thiết lập lại protocol (POS / CPCL / TSPL / ZPL) mà không cần reconnect lại
-   */
-  setProtocol(options: { protocol: 'POS' | 'CPCL' | 'TSPL' | 'ZPL' }): Promise<HandshakeResponse>;
-
+  // ===== CONFIG =====
   /**
    * Cấu hình cho in text
    */
@@ -159,4 +162,7 @@ export interface CapacitorXprinterPlugin {
    * Cấu hình cho in label (CPCL/TSPL/ZPL)
    */
   configLabel(options: Record<string, any>): Promise<any>;
+
+  // ===== UTILS =====
+  echo(options: { value: string }): Promise<{ value: string }>;
 }

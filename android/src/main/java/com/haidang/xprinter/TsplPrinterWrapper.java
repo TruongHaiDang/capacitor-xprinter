@@ -37,23 +37,19 @@ public class TsplPrinterWrapper implements PrinterBase {
     }
 
     /**
-     * Xóa buffer (clear label, bắt buộc trước khi vẽ mới)
-     */
-    public void clearBuffer() {
-        printer.cls();
-    }
-
-    /**
      * Vẽ text lên buffer máy in (chưa in)
      */
-    public void drawText(String text, int x, int y, String font, int rotation, int xScale, int yScale) {
+    public void printText(String text, int x, int y, String font, int rotation, int xScale, int yScale) {
+        printer.cls();
         printer.text(x, y, font, rotation, xScale, yScale, text);
+        printer.sendData(new byte[0]);
+        printer.print(1);
     }
 
     /**
      * Vẽ barcode lên buffer máy in (chưa in) - luôn truyền đủ tham số chuẩn TSPL
      */
-    public void drawBarcode(String data, int x, int y, String codeType, int height, int readable, int rotation, int narrow, int wide) {
+    public void printBarcode(String data, int x, int y, String codeType, int height, int readable, int rotation, int narrow, int wide) {
         printer.cls();
         String type = (codeType != null) ? codeType : "128";
         int h = (height > 0) ? height : 80;
@@ -68,7 +64,7 @@ public class TsplPrinterWrapper implements PrinterBase {
     /**
      * Vẽ QRCode lên buffer máy in (chưa in) - đảm bảo thiết lập đầy đủ trước khi in
      */
-    public void drawQRCode(String data,
+    public void printQRCode(String data,
                         int x, int y,
                         String ecLevel,    // L | M | Q | H
                         int cellWidth,     // 1–10
@@ -90,7 +86,7 @@ public class TsplPrinterWrapper implements PrinterBase {
     /**
      * Vẽ hình ảnh từ path lên buffer máy in (chưa in) - đảm bảo ảnh hợp lệ
      */
-    public void drawImageFromPath(String imagePath, int x, int y, int mode, Context context) {
+    public void printImageFromPath(String imagePath, int x, int y, int mode, Context context) {
         printer.cls();
         Bitmap bmp = null;
         try {
@@ -112,7 +108,7 @@ public class TsplPrinterWrapper implements PrinterBase {
     /**
      * Vẽ hình ảnh từ base64 lên buffer máy in (chưa in) - đảm bảo ảnh hợp lệ
      */
-    public void drawImageBase64(String base64, int x, int y, int mode) {
+    public void printImageBase64(String base64, int x, int y, int mode) {
         printer.cls();
         try {
             byte[] decoded = android.util.Base64.decode(base64, android.util.Base64.DEFAULT);
@@ -124,15 +120,6 @@ public class TsplPrinterWrapper implements PrinterBase {
             // Bỏ qua lỗi ảnh
         }
         printer.print(1);
-    }
-
-    /**
-     * In label: gửi lệnh in xuống máy in
-     * @param sets Số bộ
-     * @param copies Số bản sao (không dùng với TSPL)
-     */
-    public void printLabel(int sets, int copies) {
-        printer.print(sets);
     }
 
     /**
