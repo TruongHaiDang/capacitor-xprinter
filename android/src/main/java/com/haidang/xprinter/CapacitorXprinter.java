@@ -187,6 +187,342 @@ public class CapacitorXprinter {
         }
     }
 
+    // ===== CONFIG =====
+    // Biến instance lưu config POS
+    private String posTextAlignment = "left";
+    private int posTextAttribute = 0;
+    private int posTextSize = 0;
+    // Thêm các biến cấu hình POS nhận từ JS
+    private Integer posTextFont = null;
+    private Integer posTextLineSpacing = null;
+    private Integer posTextCodePage = null;
+    private Integer posTextCharRightSpace = null;
+    private Boolean posTextUpsideDown = null;
+    // Barcode config POS
+    private Integer posBarcodeType = null;
+    private Integer posBarcodeWidth = null;
+    private Integer posBarcodeHeight = null;
+    private String posBarcodeAlignment = null;
+    private Integer posBarcodeTextPosition = null;
+    // QRCode config POS
+    private String posQrData = null;
+    private String posQrAlignment = null;
+    private Integer posQrModuleSize = null;
+    private Integer posQrEcLevel = null;
+    // Image config POS
+    private String posImageBitmap = null;
+    private String posImageAlignment = null;
+    private Integer posImageWidth = null;
+    private Integer posImageMode = null;
+    private Integer posImageDensity = null;
+
+    public void configPosText(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("[configPosText] Chưa kết nối POSPrinter");
+            return;
+        }
+
+        try {
+            if (options.has("alignment")) {
+                posTextAlignment = options.getString("alignment", "left");
+            }
+            if (options.has("attribute")) {
+                posTextAttribute = options.getInteger("attribute");
+            }
+            if (options.has("textSize")) {
+                posTextSize = options.getInteger("textSize");
+            }
+            // Nhận các giá trị mới từ JS
+            if (options.has("font")) {
+                Object fontObj = options.get("font");
+                if (fontObj instanceof Number) {
+                    posTextFont = ((Number) fontObj).intValue();
+                } else if (fontObj instanceof String) {
+                    try {
+                        posTextFont = Integer.parseInt((String) fontObj);
+                    } catch (NumberFormatException e) {
+                        posTextFont = null;
+                    }
+                }
+            }
+            if (options.has("lineSpacing")) {
+                posTextLineSpacing = options.getInteger("lineSpacing");
+            }
+            if (options.has("codePage")) {
+                Object codePageObj = options.get("codePage");
+                if (codePageObj instanceof Number) {
+                    posTextCodePage = ((Number) codePageObj).intValue();
+                } else if (codePageObj instanceof String) {
+                    try {
+                        posTextCodePage = Integer.parseInt((String) codePageObj);
+                    } catch (NumberFormatException e) {
+                        posTextCodePage = null;
+                    }
+                }
+            }
+            if (options.has("charRightSpace")) {
+                posTextCharRightSpace = options.getInteger("charRightSpace");
+            }
+            if (options.has("upsideDown")) {
+                posTextUpsideDown = options.getBool("upsideDown");
+            }
+
+            PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
+            int alignment = POSConst.ALIGNMENT_LEFT;
+            switch (posTextAlignment.toLowerCase()) {
+                case "center": alignment = POSConst.ALIGNMENT_CENTER;
+                case "right": alignment = POSConst.ALIGNMENT_RIGHT;
+                default: alignment = POSConst.ALIGNMENT_LEFT;
+            }
+
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Đã cấu hình text");
+            call.resolve(ret);
+
+        } catch (Exception e) {
+            call.reject("Lỗi cấu hình: " + e.getMessage());
+        }
+    }
+
+    public void configCpclText(JSObject options, PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("code", 501);
+        ret.put("msg", "Chức năng configCpclText chưa được hỗ trợ");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    // TSPL config - text
+    private Integer tsplTextX = null;
+    private Integer tsplTextY = null;
+    private String tsplTextFont = null;
+    private Integer tsplTextRotation = null;
+    private Integer tsplTextXScale = null;
+    private Integer tsplTextYScale = null;
+    private String tsplTextContent = null;
+    // TSPL config - barcode
+    private Integer tsplBarcodeX = null;
+    private Integer tsplBarcodeY = null;
+    private String tsplBarcodeType = null;
+    private Integer tsplBarcodeHeight = null;
+    private Integer tsplBarcodeReadable = null;
+    private Integer tsplBarcodeRotation = null;
+    private Integer tsplBarcodeNarrow = null;
+    private Integer tsplBarcodeWide = null;
+    private String tsplBarcodeContent = null;
+    // TSPL config - qrcode
+    private Integer tsplQrX = null;
+    private Integer tsplQrY = null;
+    private String tsplQrEcLevel = null;
+    private Integer tsplQrCellWidth = null;
+    private String tsplQrMode = null;
+    private Integer tsplQrRotation = null;
+    private String tsplQrModel = null;
+    private String tsplQrMask = null;
+    private String tsplQrContent = null;
+    // TSPL config - image
+    private Integer tsplImageX = null;
+    private Integer tsplImageY = null;
+    private Integer tsplImageMode = null;
+    private Integer tsplImageWidth = null;
+    private String tsplImageBitmap = null;
+    private String tsplImageAlgorithm = null;
+
+    public void configTsplText(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter");
+            return;
+        }
+        if (options.has("x")) tsplTextX = options.getInteger("x");
+        if (options.has("y")) tsplTextY = options.getInteger("y");
+        if (options.has("font")) tsplTextFont = options.getString("font");
+        if (options.has("rotation")) tsplTextRotation = options.getInteger("rotation");
+        if (options.has("xScale")) tsplTextXScale = options.getInteger("xScale");
+        if (options.has("yScale")) tsplTextYScale = options.getInteger("yScale");
+        if (options.has("content")) tsplTextContent = options.getString("content");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình text TSPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configTsplBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter");
+            return;
+        }
+        if (options.has("x")) tsplBarcodeX = options.getInteger("x");
+        if (options.has("y")) tsplBarcodeY = options.getInteger("y");
+        if (options.has("type")) tsplBarcodeType = options.getString("type");
+        if (options.has("height")) tsplBarcodeHeight = options.getInteger("height");
+        if (options.has("readable")) tsplBarcodeReadable = options.getInteger("readable");
+        if (options.has("rotation")) tsplBarcodeRotation = options.getInteger("rotation");
+        if (options.has("narrow")) tsplBarcodeNarrow = options.getInteger("narrow");
+        if (options.has("wide")) tsplBarcodeWide = options.getInteger("wide");
+        if (options.has("content")) tsplBarcodeContent = options.getString("content");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình barcode TSPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configTsplQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter");
+            return;
+        }
+        if (options.has("x")) tsplQrX = options.getInteger("x");
+        if (options.has("y")) tsplQrY = options.getInteger("y");
+        if (options.has("ecLevel")) tsplQrEcLevel = options.getString("ecLevel");
+        if (options.has("cellWidth")) tsplQrCellWidth = options.getInteger("cellWidth");
+        if (options.has("mode")) tsplQrMode = options.getString("mode");
+        if (options.has("rotation")) tsplQrRotation = options.getInteger("rotation");
+        if (options.has("model")) tsplQrModel = options.getString("model");
+        if (options.has("mask")) tsplQrMask = options.getString("mask");
+        if (options.has("content")) tsplQrContent = options.getString("content");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình QRCode TSPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configZplText(JSObject options, PluginCall call) {
+        JSObject ret = new JSObject();
+        ret.put("code", 501);
+        ret.put("msg", "Chức năng configZplText chưa được hỗ trợ");
+        ret.put("data", null);
+        call.resolve(ret);
+    }
+
+    public void configPosBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("[configPosBarcode] Chưa kết nối POSPrinter");
+            return;
+        }
+        // Lưu lại config barcode POS nếu có
+        if (options.has("codeType")) posBarcodeType = options.getInteger("codeType");
+        if (options.has("width")) posBarcodeWidth = options.getInteger("width");
+        if (options.has("height")) posBarcodeHeight = options.getInteger("height");
+        if (options.has("alignment")) posBarcodeAlignment = options.getString("alignment");
+        if (options.has("textPosition")) posBarcodeTextPosition = options.getInteger("textPosition");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình barcode POS thành công");
+        call.resolve(ret);
+    }
+
+    public void configCpclBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
+            call.reject("Chưa kết nối CPCLPrinter");
+            return;
+        }
+        // Có thể lưu lại config barcode cho CPCL nếu cần
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình barcode CPCL thành công");
+        call.resolve(ret);
+    }
+
+    public void configZplBarcode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
+            call.reject("Chưa kết nối ZPLPrinter");
+            return;
+        }
+        // Có thể lưu lại config barcode cho ZPL nếu cần
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình barcode ZPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configPosQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("[configPosQRCode] Chưa kết nối POSPrinter");
+            return;
+        }
+        if (options.has("data")) posQrData = options.getString("data");
+        if (options.has("alignment")) posQrAlignment = options.getString("alignment");
+        if (options.has("moduleSize")) posQrModuleSize = options.getInteger("moduleSize");
+        if (options.has("errorCorrectionLevel")) posQrEcLevel = options.getInteger("errorCorrectionLevel");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình QRCode POS thành công");
+        call.resolve(ret);
+    }
+
+    public void configCpclQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
+            call.reject("Chưa kết nối CPCLPrinter");
+            return;
+        }
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình QRCode CPCL thành công");
+        call.resolve(ret);
+    }
+
+    public void configZplQRCode(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
+            call.reject("Chưa kết nối ZPLPrinter");
+            return;
+        }
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình QRCode ZPL thành công");
+        call.resolve(ret);
+    }
+
+    public void configPosImage(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
+            call.reject("[configPosImage] Chưa kết nối POSPrinter");
+            return;
+        }
+        if (options.has("bitmap")) posImageBitmap = options.getString("bitmap");
+        if (options.has("alignment")) posImageAlignment = options.getString("alignment");
+        if (options.has("width")) posImageWidth = options.getInteger("width");
+        if (options.has("mode")) posImageMode = options.getInteger("mode");
+        if (options.has("density")) posImageDensity = options.getInteger("density");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình image POS thành công");
+        call.resolve(ret);
+    }
+
+    // Image config CPCL
+    private String cpclImagePath = null;
+    private Integer cpclImageX = null;
+    private Integer cpclImageY = null;
+    private Integer cpclImageMode = null;
+    private String cpclImageBase64 = null;
+
+    public void configCpclImage(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
+            call.reject("Chưa kết nối CPCLPrinter");
+            return;
+        }
+        if (options.has("imagePath")) cpclImagePath = options.getString("imagePath");
+        if (options.has("x")) cpclImageX = options.getInteger("x");
+        if (options.has("y")) cpclImageY = options.getInteger("y");
+        if (options.has("mode")) cpclImageMode = options.getInteger("mode");
+        if (options.has("base64")) cpclImageBase64 = options.getString("base64");
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình image CPCL thành công");
+        call.resolve(ret);
+    }
+
+    public void configZplImage(JSObject options, PluginCall call) {
+        if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
+            call.reject("Chưa kết nối ZPLPrinter");
+            return;
+        }
+        JSObject ret = new JSObject();
+        ret.put("code", 200);
+        ret.put("msg", "Cấu hình image ZPL thành công");
+        call.resolve(ret);
+    }
+
     // ===== PRINT =====
     public void printText(JSObject options, PluginCall call) {
         if (currentPrinter == null) {
@@ -209,7 +545,7 @@ public class CapacitorXprinter {
                 int xScale = tsplTextXScale != null ? tsplTextXScale : 1;
                 int yScale = tsplTextYScale != null ? tsplTextYScale : 1;
                 String content = tsplTextContent != null ? tsplTextContent : text;
-                ((TsplPrinterWrapper) currentPrinter).drawText(content, x, y, font, rotation, xScale, yScale);
+                ((TsplPrinterWrapper) currentPrinter).printText(content, x, y, font, rotation, xScale, yScale);
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
                 // Lấy config từ options nếu có, không thì lấy từ biến instance
@@ -339,7 +675,7 @@ public class CapacitorXprinter {
                 String model = tsplQrModel != null ? tsplQrModel : "M2";
                 String mask = tsplQrMask != null ? tsplQrMask : null;
                 String content = tsplQrContent != null ? tsplQrContent : data;
-                ((TsplPrinterWrapper) currentPrinter).drawQRCode(content, x, y, ecLevel, cellWidth, mode, rotation);
+                ((TsplPrinterWrapper) currentPrinter).printQRCode(content, x, y, ecLevel, cellWidth, mode, rotation);
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 int moduleSize = posQrModuleSize != null ? posQrModuleSize : 4;
                 int ecLevel = posQrEcLevel != null ? posQrEcLevel : 0;
@@ -394,7 +730,7 @@ public class CapacitorXprinter {
                 int narrow = tsplBarcodeNarrow != null ? tsplBarcodeNarrow : 2;
                 int wide = tsplBarcodeWide != null ? tsplBarcodeWide : 2;
                 String content = tsplBarcodeContent != null ? tsplBarcodeContent : data;
-                ((TsplPrinterWrapper) currentPrinter).drawBarcode(content, x, y, codeType, height, readable, rotation, narrow, wide);
+                ((TsplPrinterWrapper) currentPrinter).printBarcode(content, x, y, codeType, height, readable, rotation, narrow, wide);
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 int codeType = posBarcodeType != null ? posBarcodeType : 73; // CODE128
                 int width = posBarcodeWidth != null ? posBarcodeWidth : 2;
@@ -440,6 +776,27 @@ public class CapacitorXprinter {
         }
     }
 
+    public void configTsplImage(JSObject options, PluginCall call) {
+        if (currentPrinter == null) {
+            call.reject("Chưa kết nối máy in", (Exception) null, null);
+            return;
+        }
+        try {
+            
+            JSObject ret = new JSObject();
+            ret.put("code", 200);
+            ret.put("msg", "Cấu hình image thành công");
+            ret.put("data", null);
+            call.resolve(ret);
+        } catch (Exception ex) {
+            JSObject ret = new JSObject();
+            ret.put("code", 500);
+            ret.put("msg", ex.getMessage());
+            ret.put("data", null);
+            call.reject(ex.getMessage(), ex, ret);
+        }
+    }
+
     public void printImageFromPath(JSObject options, Context context, PluginCall call) {
         if (currentPrinter == null) {
             call.reject("[printImageFromPath] Chưa kết nối máy in", (Exception) null, null);
@@ -456,7 +813,7 @@ public class CapacitorXprinter {
                 int y = tsplImageY != null ? tsplImageY : 0;
                 int mode = tsplImageMode != null ? tsplImageMode : 0;
                 String bitmap = tsplImageBitmap != null ? tsplImageBitmap : imagePath;
-                ((TsplPrinterWrapper) currentPrinter).drawImageFromPath(bitmap, x, y, mode, context);
+                ((TsplPrinterWrapper) currentPrinter).printImageFromPath(bitmap, x, y, mode, context);
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 String alignStr = posImageAlignment != null ? posImageAlignment : "left";
                 int alignment = 0;
@@ -511,7 +868,7 @@ public class CapacitorXprinter {
                 int y = tsplImageY != null ? tsplImageY : 0;
                 int mode = tsplImageMode != null ? tsplImageMode : 0;
                 String bitmap = tsplImageBitmap != null ? tsplImageBitmap : base64;
-                ((TsplPrinterWrapper) currentPrinter).drawImageBase64(bitmap, x, y, mode);
+                ((TsplPrinterWrapper) currentPrinter).printImageBase64(bitmap, x, y, mode);
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 String alignStr = posImageAlignment != null ? posImageAlignment : "left";
                 int alignment = 0;
@@ -787,404 +1144,6 @@ public class CapacitorXprinter {
         } catch (Exception e) {
             call.reject("Lỗi gửi lệnh POS: " + e.getMessage());
         }
-    }
-
-    // ===== CONFIG =====
-    // Biến instance lưu config POS
-    private String posTextAlignment = "left";
-    private int posTextAttribute = 0;
-    private int posTextSize = 0;
-    // Thêm các biến cấu hình POS nhận từ JS
-    private Integer posTextFont = null;
-    private Integer posTextLineSpacing = null;
-    private Integer posTextCodePage = null;
-    private Integer posTextCharRightSpace = null;
-    private Boolean posTextUpsideDown = null;
-    // Barcode config POS
-    private Integer posBarcodeType = null;
-    private Integer posBarcodeWidth = null;
-    private Integer posBarcodeHeight = null;
-    private String posBarcodeAlignment = null;
-    private Integer posBarcodeTextPosition = null;
-    // QRCode config POS
-    private String posQrData = null;
-    private String posQrAlignment = null;
-    private Integer posQrModuleSize = null;
-    private Integer posQrEcLevel = null;
-    // Image config POS
-    private String posImageBitmap = null;
-    private String posImageAlignment = null;
-    private Integer posImageWidth = null;
-    private Integer posImageMode = null;
-    private Integer posImageDensity = null;
-
-    public void configPosText(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("[configPosText] Chưa kết nối POSPrinter");
-            return;
-        }
-
-        try {
-            if (options.has("alignment")) {
-                posTextAlignment = options.getString("alignment", "left");
-            }
-            if (options.has("attribute")) {
-                posTextAttribute = options.getInteger("attribute");
-            }
-            if (options.has("textSize")) {
-                posTextSize = options.getInteger("textSize");
-            }
-            // Nhận các giá trị mới từ JS
-            if (options.has("font")) {
-                Object fontObj = options.get("font");
-                if (fontObj instanceof Number) {
-                    posTextFont = ((Number) fontObj).intValue();
-                } else if (fontObj instanceof String) {
-                    try {
-                        posTextFont = Integer.parseInt((String) fontObj);
-                    } catch (NumberFormatException e) {
-                        posTextFont = null;
-                    }
-                }
-            }
-            if (options.has("lineSpacing")) {
-                posTextLineSpacing = options.getInteger("lineSpacing");
-            }
-            if (options.has("codePage")) {
-                Object codePageObj = options.get("codePage");
-                if (codePageObj instanceof Number) {
-                    posTextCodePage = ((Number) codePageObj).intValue();
-                } else if (codePageObj instanceof String) {
-                    try {
-                        posTextCodePage = Integer.parseInt((String) codePageObj);
-                    } catch (NumberFormatException e) {
-                        posTextCodePage = null;
-                    }
-                }
-            }
-            if (options.has("charRightSpace")) {
-                posTextCharRightSpace = options.getInteger("charRightSpace");
-            }
-            if (options.has("upsideDown")) {
-                posTextUpsideDown = options.getBool("upsideDown");
-            }
-
-            PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
-            int alignment = POSConst.ALIGNMENT_LEFT;
-            switch (posTextAlignment.toLowerCase()) {
-                case "center": alignment = POSConst.ALIGNMENT_CENTER;
-                case "right": alignment = POSConst.ALIGNMENT_RIGHT;
-                default: alignment = POSConst.ALIGNMENT_LEFT;
-            }
-
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "Đã cấu hình text");
-            call.resolve(ret);
-
-        } catch (Exception e) {
-            call.reject("Lỗi cấu hình: " + e.getMessage());
-        }
-    }
-
-    public void configCpclText(JSObject options, PluginCall call) {
-        JSObject ret = new JSObject();
-        ret.put("code", 501);
-        ret.put("msg", "Chức năng configCpclText chưa được hỗ trợ");
-        ret.put("data", null);
-        call.resolve(ret);
-    }
-
-    // TSPL config - text
-    private Integer tsplTextX = null;
-    private Integer tsplTextY = null;
-    private String tsplTextFont = null;
-    private Integer tsplTextRotation = null;
-    private Integer tsplTextXScale = null;
-    private Integer tsplTextYScale = null;
-    private String tsplTextContent = null;
-    // TSPL config - barcode
-    private Integer tsplBarcodeX = null;
-    private Integer tsplBarcodeY = null;
-    private String tsplBarcodeType = null;
-    private Integer tsplBarcodeHeight = null;
-    private Integer tsplBarcodeReadable = null;
-    private Integer tsplBarcodeRotation = null;
-    private Integer tsplBarcodeNarrow = null;
-    private Integer tsplBarcodeWide = null;
-    private String tsplBarcodeContent = null;
-    // TSPL config - qrcode
-    private Integer tsplQrX = null;
-    private Integer tsplQrY = null;
-    private String tsplQrEcLevel = null;
-    private Integer tsplQrCellWidth = null;
-    private String tsplQrMode = null;
-    private Integer tsplQrRotation = null;
-    private String tsplQrModel = null;
-    private String tsplQrMask = null;
-    private String tsplQrContent = null;
-    // TSPL config - image
-    private Integer tsplImageX = null;
-    private Integer tsplImageY = null;
-    private Integer tsplImageMode = null;
-    private Integer tsplImageWidth = null;
-    private String tsplImageBitmap = null;
-    private String tsplImageAlgorithm = null;
-
-    public void configTsplText(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
-            call.reject("Chưa kết nối TSPLPrinter");
-            return;
-        }
-        if (options.has("x")) tsplTextX = options.getInteger("x");
-        if (options.has("y")) tsplTextY = options.getInteger("y");
-        if (options.has("font")) tsplTextFont = options.getString("font");
-        if (options.has("rotation")) tsplTextRotation = options.getInteger("rotation");
-        if (options.has("xScale")) tsplTextXScale = options.getInteger("xScale");
-        if (options.has("yScale")) tsplTextYScale = options.getInteger("yScale");
-        if (options.has("content")) tsplTextContent = options.getString("content");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình text TSPL thành công");
-        call.resolve(ret);
-    }
-
-    public void configTsplBarcode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
-            call.reject("Chưa kết nối TSPLPrinter");
-            return;
-        }
-        if (options.has("x")) tsplBarcodeX = options.getInteger("x");
-        if (options.has("y")) tsplBarcodeY = options.getInteger("y");
-        if (options.has("type")) tsplBarcodeType = options.getString("type");
-        if (options.has("height")) tsplBarcodeHeight = options.getInteger("height");
-        if (options.has("readable")) tsplBarcodeReadable = options.getInteger("readable");
-        if (options.has("rotation")) tsplBarcodeRotation = options.getInteger("rotation");
-        if (options.has("narrow")) tsplBarcodeNarrow = options.getInteger("narrow");
-        if (options.has("wide")) tsplBarcodeWide = options.getInteger("wide");
-        if (options.has("content")) tsplBarcodeContent = options.getString("content");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình barcode TSPL thành công");
-        call.resolve(ret);
-    }
-
-    public void configTsplQRCode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
-            call.reject("Chưa kết nối TSPLPrinter");
-            return;
-        }
-        if (options.has("x")) tsplQrX = options.getInteger("x");
-        if (options.has("y")) tsplQrY = options.getInteger("y");
-        if (options.has("ecLevel")) tsplQrEcLevel = options.getString("ecLevel");
-        if (options.has("cellWidth")) tsplQrCellWidth = options.getInteger("cellWidth");
-        if (options.has("mode")) tsplQrMode = options.getString("mode");
-        if (options.has("rotation")) tsplQrRotation = options.getInteger("rotation");
-        if (options.has("model")) tsplQrModel = options.getString("model");
-        if (options.has("mask")) tsplQrMask = options.getString("mask");
-        if (options.has("content")) tsplQrContent = options.getString("content");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình QRCode TSPL thành công");
-        call.resolve(ret);
-    }
-
-    public void configZplText(JSObject options, PluginCall call) {
-        JSObject ret = new JSObject();
-        ret.put("code", 501);
-        ret.put("msg", "Chức năng configZplText chưa được hỗ trợ");
-        ret.put("data", null);
-        call.resolve(ret);
-    }
-
-    public void configQRCode(JSObject options, PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        try {
-            if (currentPrinter instanceof CpclPrinterWrapper) {
-                // CPCL không có config QRCode riêng, có thể lưu model/unitWidth nếu cần
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                // TSPL không có config QRCode riêng, có thể lưu cellWidth/model nếu cần
-            } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                // ZPL không có config QRCode riêng, có thể lưu model/magnification nếu cần
-            } else {
-                call.reject("Chức năng configQRCode chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
-                return;
-            }
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "Cấu hình QRCode thành công");
-            ret.put("data", null);
-            call.resolve(ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
-    public void configImage(JSObject options, PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
-            return;
-        }
-        try {
-            if (currentPrinter instanceof CpclPrinterWrapper) {
-                // CPCL không có config image riêng, có thể lưu mode nếu cần
-                // int mode = options.has("mode") ? options.getInteger("mode") : 0;
-                // Lưu lại nếu muốn dùng cho printImage
-            } else if (currentPrinter instanceof TsplPrinterWrapper) {
-                // TSPL không có config image riêng, có thể lưu mode nếu cần
-            } else if (currentPrinter instanceof ZplPrinterWrapper) {
-                // ZPL không có config image riêng, có thể lưu width/height nếu cần
-            } else {
-                call.reject("Chức năng configImage chỉ hỗ trợ CPCL, TSPL, ZPL", (Exception) null, null);
-                return;
-            }
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "Cấu hình image thành công");
-            ret.put("data", null);
-            call.resolve(ret);
-        } catch (Exception ex) {
-            JSObject ret = new JSObject();
-            ret.put("code", 500);
-            ret.put("msg", ex.getMessage());
-            ret.put("data", null);
-            call.reject(ex.getMessage(), ex, ret);
-        }
-    }
-
-    public void configPosBarcode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("[configPosBarcode] Chưa kết nối POSPrinter");
-            return;
-        }
-        // Lưu lại config barcode POS nếu có
-        if (options.has("codeType")) posBarcodeType = options.getInteger("codeType");
-        if (options.has("width")) posBarcodeWidth = options.getInteger("width");
-        if (options.has("height")) posBarcodeHeight = options.getInteger("height");
-        if (options.has("alignment")) posBarcodeAlignment = options.getString("alignment");
-        if (options.has("textPosition")) posBarcodeTextPosition = options.getInteger("textPosition");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình barcode POS thành công");
-        call.resolve(ret);
-    }
-
-    public void configCpclBarcode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
-            call.reject("Chưa kết nối CPCLPrinter");
-            return;
-        }
-        // Có thể lưu lại config barcode cho CPCL nếu cần
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình barcode CPCL thành công");
-        call.resolve(ret);
-    }
-
-    public void configZplBarcode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
-            call.reject("Chưa kết nối ZPLPrinter");
-            return;
-        }
-        // Có thể lưu lại config barcode cho ZPL nếu cần
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình barcode ZPL thành công");
-        call.resolve(ret);
-    }
-
-    public void configPosQRCode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("[configPosQRCode] Chưa kết nối POSPrinter");
-            return;
-        }
-        if (options.has("data")) posQrData = options.getString("data");
-        if (options.has("alignment")) posQrAlignment = options.getString("alignment");
-        if (options.has("moduleSize")) posQrModuleSize = options.getInteger("moduleSize");
-        if (options.has("errorCorrectionLevel")) posQrEcLevel = options.getInteger("errorCorrectionLevel");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình QRCode POS thành công");
-        call.resolve(ret);
-    }
-
-    public void configCpclQRCode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
-            call.reject("Chưa kết nối CPCLPrinter");
-            return;
-        }
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình QRCode CPCL thành công");
-        call.resolve(ret);
-    }
-
-    public void configZplQRCode(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
-            call.reject("Chưa kết nối ZPLPrinter");
-            return;
-        }
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình QRCode ZPL thành công");
-        call.resolve(ret);
-    }
-
-    public void configPosImage(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof PosPrinterWrapper)) {
-            call.reject("[configPosImage] Chưa kết nối POSPrinter");
-            return;
-        }
-        if (options.has("bitmap")) posImageBitmap = options.getString("bitmap");
-        if (options.has("alignment")) posImageAlignment = options.getString("alignment");
-        if (options.has("width")) posImageWidth = options.getInteger("width");
-        if (options.has("mode")) posImageMode = options.getInteger("mode");
-        if (options.has("density")) posImageDensity = options.getInteger("density");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình image POS thành công");
-        call.resolve(ret);
-    }
-
-    // Image config CPCL
-    private String cpclImagePath = null;
-    private Integer cpclImageX = null;
-    private Integer cpclImageY = null;
-    private Integer cpclImageMode = null;
-    private String cpclImageBase64 = null;
-
-    public void configCpclImage(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof CpclPrinterWrapper)) {
-            call.reject("Chưa kết nối CPCLPrinter");
-            return;
-        }
-        if (options.has("imagePath")) cpclImagePath = options.getString("imagePath");
-        if (options.has("x")) cpclImageX = options.getInteger("x");
-        if (options.has("y")) cpclImageY = options.getInteger("y");
-        if (options.has("mode")) cpclImageMode = options.getInteger("mode");
-        if (options.has("base64")) cpclImageBase64 = options.getString("base64");
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình image CPCL thành công");
-        call.resolve(ret);
-    }
-
-    public void configZplImage(JSObject options, PluginCall call) {
-        if (currentPrinter == null || !(currentPrinter instanceof ZplPrinterWrapper)) {
-            call.reject("Chưa kết nối ZPLPrinter");
-            return;
-        }
-        JSObject ret = new JSObject();
-        ret.put("code", 200);
-        ret.put("msg", "Cấu hình image ZPL thành công");
-        call.resolve(ret);
     }
 
     // ===== UTILS =====

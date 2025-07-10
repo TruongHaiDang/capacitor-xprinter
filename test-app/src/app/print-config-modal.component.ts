@@ -40,7 +40,7 @@ import { CommonModule } from '@angular/common';
             <ion-label position="floating">Nội dung</ion-label>
             <ion-input [(ngModel)]="config.text" name="text"></ion-input>
           </ion-item>
-          <ion-item>
+          <ion-item *ngIf="type === 'text' && protocol === 'POS'">
             <ion-label position="floating">Căn lề</ion-label>
             <ion-select [(ngModel)]="config.alignment" name="alignment">
               <ion-select-option value="left">Trái</ion-select-option>
