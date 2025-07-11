@@ -328,6 +328,17 @@ public class CapacitorXprinter {
     private Integer tsplImageWidth = null;
     private String tsplImageBitmap = null;
     private String tsplImageAlgorithm = null;
+    // BỔ SUNG ĐẦY ĐỦ:
+    private Integer tsplImageDensity = null;
+    private Double tsplImageSpeed = null;
+    private Integer tsplImageDirection = null;
+    private Boolean tsplImageMirror = null;
+    private Integer tsplImageReferenceX = null, tsplImageReferenceY = null;
+    private Double tsplImageSizeWidthMm = null, tsplImageSizeHeightMm = null;
+    private Double tsplImageGapMmM = null, tsplImageGapMmN = null;
+    private Boolean tsplImageCls = null;
+    private Integer tsplImageEraseX = null, tsplImageEraseY = null, tsplImageEraseWidth = null, tsplImageEraseHeight = null;
+    private Boolean tsplImageBitmapCompression = null;
 
     public void configTsplText(JSObject options, PluginCall call) {
         if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
@@ -777,15 +788,92 @@ public class CapacitorXprinter {
     }
 
     public void configTsplImage(JSObject options, PluginCall call) {
-        if (currentPrinter == null) {
-            call.reject("Chưa kết nối máy in", (Exception) null, null);
+        if (currentPrinter == null || !(currentPrinter instanceof TsplPrinterWrapper)) {
+            call.reject("Chưa kết nối TSPLPrinter", (Exception) null, null);
             return;
         }
         try {
-            
+            // Nhận các tham số cấu hình từ options
+            if (options.has("x")) tsplImageX = options.getInteger("x");
+            if (options.has("y")) tsplImageY = options.getInteger("y");
+            if (options.has("width")) tsplImageWidth = options.getInteger("width");
+            if (options.has("mode")) {
+                Object modeObj = options.get("mode");
+                if (modeObj instanceof Number) tsplImageMode = ((Number) modeObj).intValue();
+                else if (modeObj instanceof String) {
+                    // Chuyển đổi tên mode sang số nếu cần
+                    String modeStr = (String) modeObj;
+                    switch (modeStr) {
+                        case "OVERWRITE": tsplImageMode = 0; break;
+                        case "OR": tsplImageMode = 1; break;
+                        case "XOR": tsplImageMode = 2; break;
+                        case "OVERWRITE_C": tsplImageMode = 128; break;
+                        case "OR_C": tsplImageMode = 129; break;
+                        case "XOR_C": tsplImageMode = 130; break;
+                        default: tsplImageMode = 0; break;
+                    }
+                }
+            }
+            if (options.has("bitmap")) tsplImageBitmap = options.getString("bitmap");
+            if (options.has("algorithm")) tsplImageAlgorithm = options.getString("algorithm");
+            if (options.has("density")) tsplImageDensity = options.getInteger("density");
+            if (options.has("speed")) {
+                Object speedObj = options.get("speed");
+                if (speedObj instanceof Number) tsplImageSpeed = ((Number) speedObj).doubleValue();
+                else if (speedObj instanceof String) {
+                    try { tsplImageSpeed = Double.parseDouble((String) speedObj); } catch (Exception e) { tsplImageSpeed = null; }
+                }
+            }
+            if (options.has("direction")) {
+                Object dirObj = options.get("direction");
+                if (dirObj instanceof Number) tsplImageDirection = ((Number) dirObj).intValue();
+                else if (dirObj instanceof String) {
+                    String dirStr = (String) dirObj;
+                    if (dirStr.equalsIgnoreCase("FORWARD")) tsplImageDirection = 0;
+                    else if (dirStr.equalsIgnoreCase("REVERSE")) tsplImageDirection = 1;
+                }
+            }
+            if (options.has("mirror")) tsplImageMirror = options.getBool("mirror");
+            if (options.has("referenceX")) tsplImageReferenceX = options.getInteger("referenceX");
+            if (options.has("referenceY")) tsplImageReferenceY = options.getInteger("referenceY");
+            if (options.has("sizeWidthMm")) {
+                Object wObj = options.get("sizeWidthMm");
+                if (wObj instanceof Number) tsplImageSizeWidthMm = ((Number) wObj).doubleValue();
+                else if (wObj instanceof String) {
+                    try { tsplImageSizeWidthMm = Double.parseDouble((String) wObj); } catch (Exception e) { tsplImageSizeWidthMm = null; }
+                }
+            }
+            if (options.has("sizeHeightMm")) {
+                Object hObj = options.get("sizeHeightMm");
+                if (hObj instanceof Number) tsplImageSizeHeightMm = ((Number) hObj).doubleValue();
+                else if (hObj instanceof String) {
+                    try { tsplImageSizeHeightMm = Double.parseDouble((String) hObj); } catch (Exception e) { tsplImageSizeHeightMm = null; }
+                }
+            }
+            if (options.has("gapMmM")) {
+                Object mObj = options.get("gapMmM");
+                if (mObj instanceof Number) tsplImageGapMmM = ((Number) mObj).doubleValue();
+                else if (mObj instanceof String) {
+                    try { tsplImageGapMmM = Double.parseDouble((String) mObj); } catch (Exception e) { tsplImageGapMmM = null; }
+                }
+            }
+            if (options.has("gapMmN")) {
+                Object nObj = options.get("gapMmN");
+                if (nObj instanceof Number) tsplImageGapMmN = ((Number) nObj).doubleValue();
+                else if (nObj instanceof String) {
+                    try { tsplImageGapMmN = Double.parseDouble((String) nObj); } catch (Exception e) { tsplImageGapMmN = null; }
+                }
+            }
+            if (options.has("cls")) tsplImageCls = options.getBool("cls");
+            if (options.has("eraseX")) tsplImageEraseX = options.getInteger("eraseX");
+            if (options.has("eraseY")) tsplImageEraseY = options.getInteger("eraseY");
+            if (options.has("eraseWidth")) tsplImageEraseWidth = options.getInteger("eraseWidth");
+            if (options.has("eraseHeight")) tsplImageEraseHeight = options.getInteger("eraseHeight");
+            if (options.has("bitmapCompression")) tsplImageBitmapCompression = options.getBool("bitmapCompression");
+
             JSObject ret = new JSObject();
             ret.put("code", 200);
-            ret.put("msg", "Cấu hình image thành công");
+            ret.put("msg", "Cấu hình image TSPL thành công");
             ret.put("data", null);
             call.resolve(ret);
         } catch (Exception ex) {
@@ -864,11 +952,67 @@ public class CapacitorXprinter {
         }
         try {
             if (currentPrinter instanceof TsplPrinterWrapper) {
-                int x = tsplImageX != null ? tsplImageX : 0;
-                int y = tsplImageY != null ? tsplImageY : 0;
-                int mode = tsplImageMode != null ? tsplImageMode : 0;
-                String bitmap = tsplImageBitmap != null ? tsplImageBitmap : base64;
-                ((TsplPrinterWrapper) currentPrinter).printImageBase64(bitmap, x, y, mode);
+                TsplPrinterWrapper tspl = (TsplPrinterWrapper) currentPrinter;
+                if (Boolean.TRUE.equals(tsplImageCls)) {
+                    tspl.cls();
+                }
+                if (tsplImageReferenceX != null && tsplImageReferenceY != null) {
+                    tspl.reference(tsplImageReferenceX, tsplImageReferenceY);
+                }
+                if (tsplImageSizeWidthMm != null && tsplImageSizeHeightMm != null) {
+                    tspl.sizeMm(tsplImageSizeWidthMm, tsplImageSizeHeightMm);
+                }
+                if (tsplImageGapMmM != null && tsplImageGapMmN != null) {
+                    tspl.gapMm(tsplImageGapMmM, tsplImageGapMmN);
+                }
+                if (tsplImageDensity != null) {
+                    tspl.density(tsplImageDensity);
+                }
+                if (tsplImageSpeed != null) {
+                    tspl.speed(tsplImageSpeed);
+                }
+                if (tsplImageDirection != null && tsplImageMirror != null) {
+                    tspl.direction(tsplImageDirection, tsplImageMirror);
+                } else if (tsplImageDirection != null) {
+                    tspl.direction(tsplImageDirection);
+                }
+                if (tsplImageEraseX != null && tsplImageEraseY != null && tsplImageEraseWidth != null && tsplImageEraseHeight != null) {
+                    tspl.erase(tsplImageEraseX, tsplImageEraseY, tsplImageEraseWidth, tsplImageEraseHeight);
+                }
+                tspl.printImageBase64(
+                    tsplImageBitmap != null ? tsplImageBitmap : base64,
+                    tsplImageX != null ? tsplImageX : 0,
+                    tsplImageY != null ? tsplImageY : 0,
+                    tsplImageMode != null ? tsplImageMode : 0
+                );
+                // Reset các biến cấu hình sau khi in
+                tsplImageX = null;
+                tsplImageY = null;
+                tsplImageMode = null;
+                tsplImageWidth = null;
+                tsplImageBitmap = null;
+                tsplImageAlgorithm = null;
+                tsplImageDensity = null;
+                tsplImageSpeed = null;
+                tsplImageDirection = null;
+                tsplImageMirror = null;
+                tsplImageReferenceX = null;
+                tsplImageReferenceY = null;
+                tsplImageSizeWidthMm = null;
+                tsplImageSizeHeightMm = null;
+                tsplImageGapMmM = null;
+                tsplImageGapMmN = null;
+                tsplImageCls = null;
+                tsplImageEraseX = null;
+                tsplImageEraseY = null;
+                tsplImageEraseWidth = null;
+                tsplImageEraseHeight = null;
+                tsplImageBitmapCompression = null;
+                JSObject ret = new JSObject();
+                ret.put("code", 200);
+                ret.put("msg", "In hình ảnh base64 TSPL thành công");
+                ret.put("data", null);
+                call.resolve(ret);
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 String alignStr = posImageAlignment != null ? posImageAlignment : "left";
                 int alignment = 0;
@@ -880,24 +1024,34 @@ public class CapacitorXprinter {
                 int width = posImageWidth != null ? posImageWidth : 0;
                 // int mode = posImageMode != null ? posImageMode : 0; // Không dùng cho PosPrinterWrapper
                 ((PosPrinterWrapper) currentPrinter).printImageBase64(base64, width, alignment);
+                JSObject ret = new JSObject();
+                ret.put("code", 200);
+                ret.put("msg", "In hình ảnh base64 thành công");
+                ret.put("data", null);
+                call.resolve(ret);
             } else if (currentPrinter instanceof CpclPrinterWrapper) {
                 String b64 = cpclImageBase64 != null ? cpclImageBase64 : base64;
                 int x = cpclImageX != null ? cpclImageX : 0;
                 int y = cpclImageY != null ? cpclImageY : 0;
                 int mode = cpclImageMode != null ? cpclImageMode : 0;
                 ((CpclPrinterWrapper) currentPrinter).printImageBase64(b64, x, y, mode);
+                JSObject ret = new JSObject();
+                ret.put("code", 200);
+                ret.put("msg", "In hình ảnh base64 thành công");
+                ret.put("data", null);
+                call.resolve(ret);
             } else if (currentPrinter instanceof ZplPrinterWrapper) {
                 int x = options.has("x") ? options.getInteger("x") : 0;
                 int y = options.has("y") ? options.getInteger("y") : 0;
                 int width = options.has("width") ? options.getInteger("width") : 200;
                 int height = options.has("height") ? options.getInteger("height") : 200;
                 ((ZplPrinterWrapper) currentPrinter).printImageBase64(base64, x, y, width, height);
+                JSObject ret = new JSObject();
+                ret.put("code", 200);
+                ret.put("msg", "In hình ảnh base64 thành công");
+                ret.put("data", null);
+                call.resolve(ret);
             }
-            JSObject ret = new JSObject();
-            ret.put("code", 200);
-            ret.put("msg", "In hình ảnh base64 thành công");
-            ret.put("data", null);
-            call.resolve(ret);
         } catch (Exception ex) {
             JSObject ret = new JSObject();
             ret.put("code", 500);

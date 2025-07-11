@@ -346,23 +346,104 @@ import { CommonModule } from '@angular/common';
 
         <ng-container *ngIf="type === 'image' && protocol === 'TSPL'">
           <ion-item>
-            <ion-label position="floating">Vị trí ngang (x)</ion-label>
+            <ion-label position="floating">Vị trí ngang (x, đơn vị: dot)</ion-label>
             <ion-input type="number" [(ngModel)]="config.x" name="x"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label position="floating">Vị trí dọc (y)</ion-label>
+            <ion-label position="floating">Vị trí dọc (y, đơn vị: dot)</ion-label>
             <ion-input type="number" [(ngModel)]="config.y" name="y"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label position="floating">Chế độ in (mode)</ion-label>
-            <ion-input type="number" [(ngModel)]="config.mode" name="mode"></ion-input>
-          </ion-item>
-          <ion-item>
-            <ion-label position="floating">Độ rộng ảnh (width)</ion-label>
+            <ion-label position="floating">Độ rộng ảnh (width, đơn vị: dot, scale ngang)</ion-label>
             <ion-input type="number" [(ngModel)]="config.width" name="width"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label position="floating">Ảnh (bitmap)</ion-label>
+            <ion-label position="floating">Chế độ in (mode)</ion-label>
+            <ion-select [(ngModel)]="config.mode" name="mode">
+              <ion-select-option value="OVERWRITE">OVERWRITE</ion-select-option>
+              <ion-select-option value="OR">OR</ion-select-option>
+              <ion-select-option value="XOR">XOR</ion-select-option>
+              <ion-select-option value="OVERWRITE_C">OVERWRITE_C</ion-select-option>
+              <ion-select-option value="OR_C">OR_C</ion-select-option>
+              <ion-select-option value="XOR_C">XOR_C</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Thuật toán chuyển ảnh (algorithm)</ion-label>
+            <ion-select [(ngModel)]="config.algorithm" name="algorithm">
+              <ion-select-option value="Threshold">Threshold</ion-select-option>
+              <ion-select-option value="Dithering">Dithering</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Độ đậm khi in (density, 0-15)</ion-label>
+            <ion-input type="number" min="0" max="15" [(ngModel)]="config.density" name="density"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Tốc độ in (speed, ví dụ: 2.0 - 5.0)</ion-label>
+            <ion-input type="number" step="0.1" [(ngModel)]="config.speed" name="speed"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Hướng in (direction)</ion-label>
+            <ion-select [(ngModel)]="config.direction" name="direction">
+              <ion-select-option value="FORWARD">FORWARD</ion-select-option>
+              <ion-select-option value="REVERSE">REVERSE</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label>Đảo ảnh ngang (mirror)</ion-label>
+            <ion-toggle [(ngModel)]="config.mirror" name="mirror"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Gốc toạ độ in (reference x, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.referenceX" name="referenceX"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Gốc toạ độ in (reference y, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.referenceY" name="referenceY"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Kích thước nhãn (width, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.sizeWidthMm" name="sizeWidthMm"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Kích thước nhãn (height, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.sizeHeightMm" name="sizeHeightMm"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Khoảng cách giữa nhãn (gap m, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.gapMmM" name="gapMmM"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Khoảng cách giữa nhãn (gap n, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.gapMmN" name="gapMmN"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>Làm sạch vùng in trước khi in (cls)</ion-label>
+            <ion-toggle [(ngModel)]="config.cls" name="cls"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Xoá vùng ảnh (erase x, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.eraseX" name="eraseX"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Xoá vùng ảnh (erase y, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.eraseY" name="eraseY"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Xoá vùng ảnh (erase width, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.eraseWidth" name="eraseWidth"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Xoá vùng ảnh (erase height, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.eraseHeight" name="eraseHeight"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>In ảnh dạng nén (bitmapCompression)</ion-label>
+            <ion-toggle [(ngModel)]="config.bitmapCompression" name="bitmapCompression"></ion-toggle>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Ảnh (bitmap/base64)</ion-label>
             <ion-input [(ngModel)]="config.bitmap" name="bitmap"></ion-input>
           </ion-item>
           <ion-item>

@@ -175,5 +175,34 @@ public class TsplPrinterWrapper implements PrinterBase {
         printer.text(posX, posY, fontName, 0, 1, 1, text);
         printer.print(1);
     }
+
+    // ===== BỔ SUNG HÀM PUBLIC CẤU HÌNH =====
+    public void cls() {
+        printer.cls();
+    }
+    public void reference(int x, int y) {
+        printer.reference(x, y);
+    }
+    public void sizeMm(double w, double h) {
+        printer.sizeMm(w, h);
+    }
+    public void gapMm(double m, double n) {
+        printer.gapMm(m, n);
+    }
+    public void density(int d) {
+        printer.density(d);
+    }
+    public void speed(double s) {
+        printer.speed(s);
+    }
+    public void direction(int dir) {
+        printer.direction(dir);
+    }
+    public void direction(int dir, boolean mirror) {
+        printer.direction(dir, mirror);
+    }
+    public void erase(int x, int y, int w, int h) {
+        printer.erase(x, y, w, h);
+    }
 }
 

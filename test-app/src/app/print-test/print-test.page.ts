@@ -360,7 +360,7 @@ export class PrintTestPage implements OnInit {
   }
 
   /**
-   * Chụp ảnh và in bằng base64
+   * Lấy ảnh từ thư viện và in bằng base64 (cho tất cả các loại máy in)
    */
   async captureImageAndPrintBase64() {
     try {
@@ -368,7 +368,7 @@ export class PrintTestPage implements OnInit {
         quality: 90,
         allowEditing: false,
         resultType: CameraResultType.Base64,
-        source: CameraSource.Camera,
+        source: CameraSource.Photos, // Chỉ lấy từ thư viện
       });
       const base64 = photo.base64String;
       if (!base64) {
@@ -397,13 +397,30 @@ export class PrintTestPage implements OnInit {
           imagePath: config.bitmap,
           language: this.selectedProtocol
         });
-        res = await this.xprinter.printImageBase64({ imagePath: config.bitmap, language: this.selectedProtocol });
-      } else {
-        res = await this.xprinter.printImageBase64({ imagePath: config.bitmap, language: this.selectedProtocol });
+        res = await this.xprinter.printImageBase64({ bitmap: config.bitmap, x: config.x, y: config.y, mode: config.mode, language: this.selectedProtocol });
+      } else if (this.selectedProtocol === 'CPCL') {
+        await this.xprinter.configImage({
+          x: config.x,
+          y: config.y,
+          mode: config.mode,
+          base64: config.bitmap,
+          language: this.selectedProtocol
+        });
+        res = await this.xprinter.printImageBase64({ base64: config.bitmap, x: config.x, y: config.y, mode: config.mode, language: this.selectedProtocol });
+      } else if (this.selectedProtocol === 'ZPL') {
+        await this.xprinter.configImage({
+          x: config.x,
+          y: config.y,
+          width: config.width,
+          height: config.height,
+          base64: config.bitmap,
+          language: this.selectedProtocol
+        });
+        res = await this.xprinter.printImageBase64({ base64: config.bitmap, x: config.x, y: config.y, width: config.width, height: config.height, language: this.selectedProtocol });
       }
-      alert(res.msg || 'In ảnh chụp (base64) thành công!');
+      alert(res?.msg || 'In ảnh base64 thành công!');
     } catch (err: any) {
-      alert(err?.msg || err?.message || 'Lỗi chụp/in ảnh');
+      alert(err?.msg || err?.message || 'Lỗi lấy/in ảnh base64');
     }
   }
 
