@@ -243,6 +243,50 @@ import { CommonModule } from '@angular/common';
             <ion-label position="floating">Nội dung</ion-label>
             <ion-input [(ngModel)]="config.content" name="content"></ion-input>
           </ion-item>
+          <!-- Bổ sung các trường cấu hình nhãn, reference, density, speed, direction, mirror -->
+          <ion-item>
+            <ion-label position="floating">Chiều rộng nhãn (sizeWidthMm, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.sizeWidthMm" name="sizeWidthMm"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Chiều cao nhãn (sizeHeightMm, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.sizeHeightMm" name="sizeHeightMm"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Khoảng cách giữa nhãn (gapMmM, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.gapMmM" name="gapMmM"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Khoảng dịch chuyển nhãn (gapMmN, mm)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.gapMmN" name="gapMmN"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Toạ độ gốc X (referenceX, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.referenceX" name="referenceX"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Toạ độ gốc Y (referenceY, dot)</ion-label>
+            <ion-input type="number" [(ngModel)]="config.referenceY" name="referenceY"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Độ đậm nét (density, 0-15)</ion-label>
+            <ion-input type="number" min="0" max="15" [(ngModel)]="config.density" name="density"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Tốc độ in (speed, mm/s)</ion-label>
+            <ion-input type="number" step="0.1" [(ngModel)]="config.speed" name="speed"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label position="floating">Hướng in (direction)</ion-label>
+            <ion-select [(ngModel)]="config.direction" name="direction">
+              <ion-select-option [value]="0">Forward</ion-select-option>
+              <ion-select-option [value]="1">Reverse</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-item>
+            <ion-label>In mirror (đảo chiều ngang)</ion-label>
+            <ion-toggle [(ngModel)]="config.mirror" name="mirror"></ion-toggle>
+          </ion-item>
         </ng-container>
 
         <ng-container *ngIf="type === 'barcode' && protocol === 'TSPL'">

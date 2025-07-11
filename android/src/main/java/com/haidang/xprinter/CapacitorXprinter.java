@@ -352,6 +352,59 @@ public class CapacitorXprinter {
         if (options.has("xScale")) tsplTextXScale = options.getInteger("xScale");
         if (options.has("yScale")) tsplTextYScale = options.getInteger("yScale");
         if (options.has("content")) tsplTextContent = options.getString("content");
+        // Bổ sung các trường nâng cao, bọc trong try-catch để tránh lỗi JSONException
+        try {
+            if (options.has("sizeWidthMm")) {
+                Object wObj = options.get("sizeWidthMm");
+                if (wObj instanceof Number) tsplImageSizeWidthMm = ((Number) wObj).doubleValue();
+                else if (wObj instanceof String) {
+                    try { tsplImageSizeWidthMm = Double.parseDouble((String) wObj); } catch (Exception e) { tsplImageSizeWidthMm = null; }
+                }
+            }
+            if (options.has("sizeHeightMm")) {
+                Object hObj = options.get("sizeHeightMm");
+                if (hObj instanceof Number) tsplImageSizeHeightMm = ((Number) hObj).doubleValue();
+                else if (hObj instanceof String) {
+                    try { tsplImageSizeHeightMm = Double.parseDouble((String) hObj); } catch (Exception e) { tsplImageSizeHeightMm = null; }
+                }
+            }
+            if (options.has("gapMmM")) {
+                Object mObj = options.get("gapMmM");
+                if (mObj instanceof Number) tsplImageGapMmM = ((Number) mObj).doubleValue();
+                else if (mObj instanceof String) {
+                    try { tsplImageGapMmM = Double.parseDouble((String) mObj); } catch (Exception e) { tsplImageGapMmM = null; }
+                }
+            }
+            if (options.has("gapMmN")) {
+                Object nObj = options.get("gapMmN");
+                if (nObj instanceof Number) tsplImageGapMmN = ((Number) nObj).doubleValue();
+                else if (nObj instanceof String) {
+                    try { tsplImageGapMmN = Double.parseDouble((String) nObj); } catch (Exception e) { tsplImageGapMmN = null; }
+                }
+            }
+            if (options.has("speed")) {
+                Object speedObj = options.get("speed");
+                if (speedObj instanceof Number) tsplImageSpeed = ((Number) speedObj).doubleValue();
+                else if (speedObj instanceof String) {
+                    try { tsplImageSpeed = Double.parseDouble((String) speedObj); } catch (Exception e) { tsplImageSpeed = null; }
+                }
+            }
+            if (options.has("direction")) {
+                Object dirObj = options.get("direction");
+                if (dirObj instanceof Number) tsplImageDirection = ((Number) dirObj).intValue();
+                else if (dirObj instanceof String) {
+                    String dirStr = (String) dirObj;
+                    if (dirStr.equalsIgnoreCase("FORWARD")) tsplImageDirection = 0;
+                    else if (dirStr.equalsIgnoreCase("REVERSE")) tsplImageDirection = 1;
+                }
+            }
+        } catch (Exception e) {
+            // Nếu lỗi, các biến sẽ là null
+        }
+        if (options.has("referenceX")) tsplImageReferenceX = options.getInteger("referenceX");
+        if (options.has("referenceY")) tsplImageReferenceY = options.getInteger("referenceY");
+        if (options.has("density")) tsplImageDensity = options.getInteger("density");
+        if (options.has("mirror")) tsplImageMirror = options.getBool("mirror");
         JSObject ret = new JSObject();
         ret.put("code", 200);
         ret.put("msg", "Cấu hình text TSPL thành công");
@@ -549,6 +602,28 @@ public class CapacitorXprinter {
     
         try {
             if (currentPrinter instanceof TsplPrinterWrapper) {
+                TsplPrinterWrapper tspl = (TsplPrinterWrapper) currentPrinter;
+                // Áp dụng các cấu hình nâng cao nếu có
+                if (tsplImageSizeWidthMm != null && tsplImageSizeHeightMm != null) {
+                    tspl.sizeMm(tsplImageSizeWidthMm, tsplImageSizeHeightMm);
+                }
+                if (tsplImageGapMmM != null && tsplImageGapMmN != null) {
+                    tspl.gapMm(tsplImageGapMmM, tsplImageGapMmN);
+                }
+                if (tsplImageReferenceX != null && tsplImageReferenceY != null) {
+                    tspl.reference(tsplImageReferenceX, tsplImageReferenceY);
+                }
+                if (tsplImageDensity != null) {
+                    tspl.density(tsplImageDensity);
+                }
+                if (tsplImageSpeed != null) {
+                    tspl.speed(tsplImageSpeed);
+                }
+                if (tsplImageDirection != null && tsplImageMirror != null) {
+                    tspl.direction(tsplImageDirection, tsplImageMirror);
+                } else if (tsplImageDirection != null) {
+                    tspl.direction(tsplImageDirection);
+                }
                 int x = tsplTextX != null ? tsplTextX : 0;
                 int y = tsplTextY != null ? tsplTextY : 0;
                 String font = tsplTextFont != null ? tsplTextFont : "0";
@@ -556,7 +631,19 @@ public class CapacitorXprinter {
                 int xScale = tsplTextXScale != null ? tsplTextXScale : 1;
                 int yScale = tsplTextYScale != null ? tsplTextYScale : 1;
                 String content = tsplTextContent != null ? tsplTextContent : text;
-                ((TsplPrinterWrapper) currentPrinter).printText(content, x, y, font, rotation, xScale, yScale);
+                tspl.cls();
+                tspl.printText(content, x, y, font, rotation, xScale, yScale);
+                // Reset các biến cấu hình nâng cao sau khi in
+                tsplImageSizeWidthMm = null;
+                tsplImageSizeHeightMm = null;
+                tsplImageGapMmM = null;
+                tsplImageGapMmN = null;
+                tsplImageReferenceX = null;
+                tsplImageReferenceY = null;
+                tsplImageDensity = null;
+                tsplImageSpeed = null;
+                tsplImageDirection = null;
+                tsplImageMirror = null;
             } else if (currentPrinter instanceof PosPrinterWrapper) {
                 PosPrinterWrapper pos = (PosPrinterWrapper) currentPrinter;
                 // Lấy config từ options nếu có, không thì lấy từ biến instance
